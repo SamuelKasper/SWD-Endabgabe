@@ -1,9 +1,5 @@
-export class userDao {
-    public username: string;
-    public password: string;
+export interface UserDao{
+  username: string;
+  password: string;
+} 
 
-  constructor(_username: string, _password: string) {
-    this.username = _username;
-    this.password = _password;
-  }
-}

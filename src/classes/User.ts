@@ -1,11 +1,12 @@
 import { Answers } from "prompts";
-import { userDao } from "../dao/userDao";
+import { UserDao } from "../dao/userDao";
 import Console from "./singleton/Console";
 import FileHandler from "./singleton/FileHandler";
+import { State } from "./State";
 
 export class User {
     // Variable which represents the state of the user: guest, loggedIn, admin
-    public accountState: string = "guest";
+    public accountState: State = new State();
 
     //Register
     public async registerUser(): Promise<boolean> {
@@ -19,9 +20,9 @@ export class User {
             let regexName: RegExp = /^[a-zA-Z0-9]{1,10}$/;
             //If name is valid save name and password in the user file
             if (regexName.test(username.value)) {
-                let userObject: userDao = { username: username.value, password: password.value };
+                let userObject: UserDao = { username: username.value, password: password.value };
                 FileHandler.writeJsonFile("./files/User.json", userObject)
-                Console.printLine("Registration successful.");
+                Console.printLine("\nRegistration successful.\n\n");
                 return true;
             } else {
                 Console.printLine("\nUsername invalid. No special characters and only 10 characters in total allowed!\n\n");
@@ -38,16 +39,16 @@ export class User {
 
         // Check if user is admin
         if (username.value == "admin" && password.value == "superSecretPassword") {
-            this.accountState = "admin";
+            this.accountState.setState("admin");
             Console.printLine("\nLogged in as admin.\n\n");
             return true;
         }
 
         // If user is not admin
-        let users: userDao[] = await FileHandler.readJsonFile("./files/User.json");
+        let users: UserDao[] = await FileHandler.readJsonFile("./files/User.json");
         for (let i: number = 0; i < users.length; i++) {
             if (users[i].username == username.value && users[i].password == password.value) {
-                this.accountState = "loggedIn";
+                this.accountState.setState("loggedIn");
                 Console.printLine("\nLogin successful.\n\n");
                 return true;
             }
@@ -58,7 +59,7 @@ export class User {
 
     //Check username
     public async checkUsernameFree(_username: string): Promise<boolean> {
-        let users: userDao[] = await FileHandler.readJsonFile("./files/User.json");
+        let users: UserDao[] = await FileHandler.readJsonFile("./files/User.json");
         // users would be null if the file couldn't be read
         if (users != null) {
             for (let i: number = 0; i < users.length; i++) {
@@ -69,10 +70,5 @@ export class User {
             }
         }
         return true;
-    }
-
-    //Get account state
-    public getAccountState(): string {
-        return this.accountState;
     }
 }

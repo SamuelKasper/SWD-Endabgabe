@@ -6,5 +6,5 @@
 
 ## To get this to work:
 
-1. All JSON files must at least contain [{}].
+1. All JSON files must at least contain [].
 
