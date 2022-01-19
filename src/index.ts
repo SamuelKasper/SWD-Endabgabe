@@ -32,7 +32,7 @@ export class Main {
       //Case register
       case 1:
         await this.user.registerUser();
-        this.showStartOptions();
+        await this.showStartOptions();
         break;
 
       //Case login
@@ -40,15 +40,30 @@ export class Main {
         if (await this.user.loginUser()) {
           // If user is admin
           if (this.user.accountState.getState() == "admin") {
-            this.showOptionsIfAdminn();
-
-          // If user is normal user
+            await this.showOptionsIfAdminn();
+            break;
+            // If user is normal user
           } else {
-            this.showOptionsIfLoggedIn();
+            await this.showOptionsIfLoggedIn();
+            break;
           }
         } else {
-          this.showStartOptions();
+          await this.showStartOptions();
+          break;
         }
+
+      //Search a car
+      case 3:
+        break;
+
+      //All cars
+      case 4:
+        await this.car.getCars();
+        await this.car.chooseACar();
+        break;
+
+      //Filter
+      case 5:
         break;
     }
   }
@@ -70,6 +85,8 @@ export class Main {
 
       //All cars
       case 2:
+        await this.car.getCars()
+        await this.car.chooseACar();
         break;
 
       //Filter
@@ -92,7 +109,7 @@ export class Main {
     switch (answer.value) {
       //Add a car
       case 1:
-        this.car.addCar();
+        await this.car.addCar();
         break;
 
       //Search a car
@@ -101,6 +118,8 @@ export class Main {
 
       //All cars
       case 3:
+        await this.car.getCars();
+        await this.car.chooseACar();
         break;
 
       //Filter

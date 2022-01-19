@@ -41,4 +41,56 @@ export class Car {
         }
         return true;
     }
+
+    // Show the first 10 cars
+    public async getCars(): Promise<void> {
+        let carsArray: string[] = [];
+        let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
+        for (let i: number = 0; i < cars.length; i++) {
+            carsArray[i] = cars[i].model;
+        }
+
+        //Only show the first 10 cars at maximum
+        if (carsArray.length < 10) {
+            //If there is only one or less car, add "no entry" so it will be shown in console.
+            for (let i: number = carsArray.length; i < 2; i++) {
+                carsArray[i] = "no entry";
+            }
+            
+            //Show all cars if there are lass than 10 cars in total
+            for (let i: number = 0; i < carsArray.length; i++) {
+                console.log(carsArray[i]);
+            }
+        } else {
+            //Show the first 10 cars
+            for (let anz: number = 0; anz < 10; anz++) {
+                console.log(carsArray[anz]);
+            }
+        }
+    }
+
+    // Show all cars
+    public async getAllCars(): Promise<void> {
+        let carsArray: string[] = [];
+        let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
+        for (let i: number = 0; i < cars.length; i++) {
+            carsArray[i] = cars[i].model;
+        }
+
+        //Show all cars
+        for (let anz: number = 0; anz < carsArray.length; anz++) {
+            Console.printLine(carsArray[anz]);
+        }
+    }
+
+    public async chooseACar(): Promise<boolean>{
+        let model: Answers<string> = await Console.waitForAnswers("Enter car you want to choose:", 'text');
+        //CODE
+        let date: Answers<string> = await Console.waitForAnswers("Enter the date you want to use the car:", 'text');
+        let time: Answers<string> = await Console.waitForAnswers("Enter the time you want to use the car:", 'text');
+        let duration: Answers<string> = await Console.waitForAnswers("Enter the duration (minutes) you want to use the car", 'text');
+        return true;
+    }
+
+
 }

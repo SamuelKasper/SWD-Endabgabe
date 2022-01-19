@@ -1,1 +1,1 @@
-[{"ID":"TestID","model":"TestModel","type":1,"from":"6:00","to":"22:00","maxDuration":180,"price":20,"pricePerMin":2}]
+[{"ID":"TestID","model":"TestModel","type":1,"from":"6:00","to":"22:00","maxDuration":180,"price":20,"pricePerMin":2},{"ID":"TestID","model":"TestModel","type":1,"from":"6:00","to":"22:00","maxDuration":180,"price":20,"pricePerMin":2}]
