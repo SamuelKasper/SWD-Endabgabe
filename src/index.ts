@@ -2,10 +2,12 @@ import { Answers } from 'prompts';
 import * as readline from 'readline';
 import Console from './classes/singleton/Console';
 import { User } from './classes/User';
+import { Car } from './classes/Car';
 
 export class Main {
   public consoleLine: readline.ReadLine;
   public user: User = new User();
+  public car: Car = new Car();
 
   constructor() {
     this.consoleLine = readline.createInterface({
@@ -36,7 +38,14 @@ export class Main {
       //Case login
       case 2:
         if (await this.user.loginUser()) {
-          this.showOptionsIfLoggedIn();
+          // If user is admin
+          if (this.user.accountState.getState() == "admin") {
+            this.showOptionsIfAdminn();
+
+          // If user is normal user
+          } else {
+            this.showOptionsIfLoggedIn();
+          }
         } else {
           this.showStartOptions();
         }
@@ -65,6 +74,37 @@ export class Main {
 
       //Filter
       case 3:
+        break;
+    }
+  }
+
+  public async showOptionsIfAdminn(): Promise<void> {
+    let answer: Answers<string> = await Console.showOptions(
+      [
+        "Add a car",
+        "Search a car",
+        "All cars",
+        "Filter",
+      ],
+      "Which option do you want to choose?"
+    );
+
+    switch (answer.value) {
+      //Add a car
+      case 1:
+        this.car.addCar();
+        break;
+
+      //Search a car
+      case 2:
+        break;
+
+      //All cars
+      case 3:
+        break;
+
+      //Filter
+      case 4:
         break;
     }
   }

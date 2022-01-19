@@ -21,7 +21,7 @@ export class User {
             //If name is valid save name and password in the user file
             if (regexName.test(username.value)) {
                 let userObject: UserDao = { username: username.value, password: password.value };
-                FileHandler.writeJsonFile("./files/User.json", userObject)
+                FileHandler.writeJsonFile("./files/User.json", userObject);
                 Console.printLine("\nRegistration successful.\n\n");
                 return true;
             } else {
@@ -61,12 +61,10 @@ export class User {
     public async checkUsernameFree(_username: string): Promise<boolean> {
         let users: UserDao[] = await FileHandler.readJsonFile("./files/User.json");
         // users would be null if the file couldn't be read
-        if (users != null) {
-            for (let i: number = 0; i < users.length; i++) {
-                if (users[i].username == _username) {
-                    Console.printLine("\nThis username is already used.\n\n");
-                    return false;
-                }
+        for (let i: number = 0; i < users.length; i++) {
+            if (users[i].username == _username) {
+                Console.printLine("\nThis username is already used.\n\n");
+                return false;
             }
         }
         return true;
