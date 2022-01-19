@@ -50,7 +50,9 @@ class Console {
             type: _type,
             name: 'value',
             message: _question,
-            initial: 1
+            initial: 1,
+            active: 'yes',
+            inactive: 'no'
         })
     }
 }

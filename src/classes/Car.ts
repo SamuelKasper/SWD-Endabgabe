@@ -5,6 +5,7 @@ import FileHandler from "./singleton/FileHandler";
 
 export class Car {
 
+    /** Add a car to the json. Only available for administrators */
     public async addCar(): Promise<boolean> {
         // Ask user to input the cars properties
         let id: Answers<string> = await Console.waitForAnswers("Enter the ID:", 'text');
@@ -30,6 +31,7 @@ export class Car {
         }
     }
 
+    /** Check if the car id is unused*/
     public async checkIDFree(_id: string): Promise<boolean> {
         let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
         // users would be null if the file couldn't be read
@@ -42,8 +44,9 @@ export class Car {
         return true;
     }
 
-    // Show the first 10 cars
+    /** Show the cars in console*/
     public async getCars(): Promise<void> {
+        //Save the cars from json in an array
         let carsArray: string[] = [];
         let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
         for (let i: number = 0; i < cars.length; i++) {
@@ -52,12 +55,7 @@ export class Car {
 
         //Only show the first 10 cars at maximum
         if (carsArray.length < 10) {
-            //If there is only one or less car, add "no entry" so it will be shown in console.
-            for (let i: number = carsArray.length; i < 2; i++) {
-                carsArray[i] = "no entry";
-            }
-            
-            //Show all cars if there are lass than 10 cars in total
+            //Show all cars if there are less than 10 cars in total
             for (let i: number = 0; i < carsArray.length; i++) {
                 console.log(carsArray[i]);
             }
@@ -66,25 +64,19 @@ export class Car {
             for (let anz: number = 0; anz < 10; anz++) {
                 console.log(carsArray[anz]);
             }
+            let answer: Answers<string> = await Console.waitForAnswers("Do you want to see all cars?", 'toggle');
+            //Show all cars if the user wants to
+            if (answer.value == true) {
+                for (let i: number = 0; i < carsArray.length; i++) {
+                    console.log(carsArray[i]);
+                }
+            }
         }
     }
 
-    // Show all cars
-    public async getAllCars(): Promise<void> {
-        let carsArray: string[] = [];
-        let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
-        for (let i: number = 0; i < cars.length; i++) {
-            carsArray[i] = cars[i].model;
-        }
-
-        //Show all cars
-        for (let anz: number = 0; anz < carsArray.length; anz++) {
-            Console.printLine(carsArray[anz]);
-        }
-    }
-
-    public async chooseACar(): Promise<boolean>{
-        let model: Answers<string> = await Console.waitForAnswers("Enter car you want to choose:", 'text');
+    /** Choose a car */
+    public async chooseACar(): Promise<boolean> {
+        let model: Answers<string> = await Console.waitForAnswers("Enter the car you want to reserve:", 'text');
         //CODE
         let date: Answers<string> = await Console.waitForAnswers("Enter the date you want to use the car:", 'text');
         let time: Answers<string> = await Console.waitForAnswers("Enter the time you want to use the car:", 'text');
