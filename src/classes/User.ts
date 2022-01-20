@@ -6,7 +6,7 @@ import { State } from "./State";
 
 export class User {
     // Variable which represents the state of the user: guest, loggedIn, admin
-    public accountState: State = new State();
+    public accountState: string = "guest";
     public customer: string = "";
 
     //Register
@@ -41,7 +41,7 @@ export class User {
 
         // Check if user is admin
         if (username.value == "admin" && password.value == "123") {
-            this.accountState.setState("admin");
+            this.accountState = "admin";
             Console.printLine("\nLogged in as admin.\n\n");
             return true;
         }
@@ -50,7 +50,7 @@ export class User {
         let users: UserDao[] = await FileHandler.readJsonFile("./files/User.json");
         for (let i: number = 0; i < users.length; i++) {
             if (users[i].username == username.value && users[i].password == password.value) {
-                this.accountState.setState("loggedIn");
+                this.accountState = "loggedIn";
                 Console.printLine("\nLogin successful.\n\n");
                 return true;
             }
@@ -74,6 +74,6 @@ export class User {
 
     // Get account state
     public getAccountState(): string {
-        return this.accountState.getState();
+        return this.accountState;
     }
 }

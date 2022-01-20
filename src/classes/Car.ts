@@ -45,54 +45,6 @@ export class Car {
         return true;
     }
 
-    /** Show the cars in console*/
-    public async printCarList(): Promise<void> {
-        console.log("\nPlease make your input without the '(E)'!");
-        //Save the cars from json in an array
-        let carsArray: string[] = [];
-        let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
-        for (let i: number = 0; i < cars.length; i++) {
-            // Add (E) to the car's model to show that its an electric car
-            if (cars[i].type == "1") {
-                carsArray[i] = cars[i].model + " (E)";
-            } else {
-                carsArray[i] = cars[i].model;
-            }
-        }
-
-        //Only show the first 10 cars at maximum
-        if (carsArray.length < 10) {
-            //Show all cars if there are less than 10 cars in total
-            for (let i: number = 0; i < carsArray.length; i++) {
-                console.log(carsArray[i]);
-            }
-        } else {
-            //Show the first 10 cars
-            for (let anz: number = 0; anz < 10; anz++) {
-                console.log(carsArray[anz]);
-            }
-            let answer: Answers<string> = await Console.waitForAnswers("Do you want to see all cars?", 'toggle');
-            //Show all cars if the user wants to
-            if (answer.value == true) {
-                for (let i: number = 0; i < carsArray.length; i++) {
-                    console.log(carsArray[i]);
-                }
-            }
-        }
-    }
-
-    /** Choose a car */
-    public async chooseACar(_customer: User): Promise<void> {
-        // Get the selected car and save it in a variable
-        let model: Answers<string> = await Console.waitForAnswers("Enter the car you want to reserve:", 'text');
-        let selectedCar = await this.getCar(model.value);
-        // If selected car exists call bookACar
-        if (selectedCar != undefined) {
-            let booking: Booking = new Booking(selectedCar, _customer);
-            await booking.startBookProcess();
-        }
-    }
-
     /** Get a car and return it*/
     public async getCar(_model: string): Promise<CarDao | undefined> {
         let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
@@ -104,5 +56,75 @@ export class Car {
         return undefined;
     }
 
+    /** Search for a car and return a list of found cars */
+    public async searchCar(_user: User) {
+        // Ask for model and drive type
+        let searchString: Answers<string> = await Console.waitForAnswers("Search for a car:", 'text');
+        let type: Answers<string> = await Console.showOptions(["Electronic", "Conventional",], "Select the drive type:");
 
+        // Find cars with given properties in the json and save them
+        let foundCars: CarDao[] = [];
+        let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
+        for (let i: number = 0; i < cars.length; i++) {
+            if (cars[i].model.includes(searchString.value)) {
+                if (cars[i].type == type.value) {
+                    foundCars.push(cars[i]);
+                }
+            }
+        }
+        this.showCarList(foundCars, _user);
+    }
+
+    /** Prints a list of cars to the console */
+    public async showCarList(_list: CarDao[], _user: User) {
+        console.log("------- " + _list.length + " result/s -------");
+
+        // If there are less than 10 cars in the list
+        if (_list.length < 10) {
+            for (let i = 0; i < _list.length; i++) {
+                if (_list[i].type == "1") {
+                    console.log(i + ": " + _list[i].model + " (E)");
+                } else {
+                    console.log(i + ": " + _list[i].model);
+                }
+            }
+
+            // If there are more than 10 cars in the list
+        } else {
+            for (let i = 0; i < 10; i++) {
+                if (_list[i].type == "1") {
+                    console.log(i + ": " + _list[i].model + " (E)");
+                } else {
+                    console.log(i + ": " + _list[i].model);
+                }
+            }
+            //Show all cars if the user wants to
+            let answer: Answers<string> = await Console.waitForAnswers("Do you want to see all cars?", 'toggle');
+            for (let i = 0; i < _list.length; i++) {
+                if (_list[i].type == "1") {
+                    console.log(i + ": " + _list[i].model + " (E)");
+                } else {
+                    console.log(i + ": " + _list[i].model);
+                }
+            }
+        }
+        await this.selectACar(_list, _user);
+    }
+
+    /** Select a car from a list*/
+    public async selectACar(_list: CarDao[], _user: User): Promise<void> {
+        let nr: Answers<string> = await Console.waitForAnswers("Enter the number of the car you want to reserve:", 'number');
+        let selectedCar = _list[nr.value];
+        // If selected car exists call bookACar
+        if (selectedCar != undefined) {
+            let booking: Booking = new Booking(selectedCar, _user);
+            await booking.startBookProcess();
+        }
+    }
+
+    /** Get a list of all cars */
+    public async getAllCars(): Promise<CarDao[]> {
+        let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
+        return cars;
+    }
 }

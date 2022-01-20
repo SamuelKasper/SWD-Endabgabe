@@ -3,6 +3,7 @@ import * as readline from 'readline';
 import Console from './classes/singleton/Console';
 import { User } from './classes/User';
 import { Car } from './classes/Car';
+import { CarDao } from './dao/carDao';
 
 export class Main {
   public consoleLine: readline.ReadLine;
@@ -19,27 +20,95 @@ export class Main {
   public async showStartOptions(): Promise<void> {
     let answer: Answers<string> = await Console.showOptions(
       [
-        "Register",
-        "Login",
         "Search a car",
         "All cars",
         "Filter",
+        "Statistic",
+        "Bookings",
+        "Register",
+        "Login",
       ],
       "Which option do you want to choose?"
     );
+    // Call the selected option
+    // +1 because "add a car" is the first option in the switch case, but isnt't shown here
+    this.selectOption(parseInt(answer.value + 1));
+  }
 
-    switch (answer.value) {
-      //Case register
+  public async showOptionsIfLoggedIn(): Promise<void> {
+    let answer: Answers<string> = await Console.showOptions(
+      [
+        "Search a car",
+        "All cars",
+        "Filter",
+        "Statistic",
+        "Bookings",
+      ],
+      "Which option do you want to choose?"
+    );
+    // Call the selected option
+    // +1 because "add a car" is the first option in the switch case, but isnt't shown here
+    this.selectOption(parseInt(answer.value + 1));
+  }
+
+  public async showOptionsIfAdminn(): Promise<void> {
+    let answer: Answers<string> = await Console.showOptions(
+      [
+        "Add a car",
+        "Search a car",
+        "All cars",
+        "Filter",
+        "Statistic",
+        "Bookings",
+      ],
+      "Which option do you want to choose?"
+    );
+    //Call the selected option
+    this.selectOption(parseInt(answer.value));
+  }
+
+  public async selectOption(_option: number) {
+    switch (_option) {
+      //Add a cars
       case 1:
+        await this.car.addCar();
+        break;
+
+      //Search a car
+      case 2:
+        await this.car.searchCar(this.user);
+        break;
+
+      //All cars
+      case 3:
+        let list: CarDao[] = await this.car.getAllCars();
+        await this.car.showCarList(list, this.user);
+        await this.showStartOptions();
+        break;
+
+      //Filter
+      case 4:
+        break;
+
+      //Statistic
+      case 5:
+        break;
+
+      //Bookings
+      case 6:
+        break;
+
+      //Register
+      case 7:
         await this.user.registerUser();
         await this.showStartOptions();
         break;
 
-      //Case login
-      case 2:
+      //Login
+      case 8:
         if (await this.user.loginUser()) {
           // If user is admin
-          if (this.user.accountState.getState() == "admin") {
+          if (this.user.accountState == "admin") {
             await this.showOptionsIfAdminn();
             break;
             // If user is normal user
@@ -51,85 +120,6 @@ export class Main {
           await this.showStartOptions();
           break;
         }
-
-      //Search a car
-      case 3:
-        break;
-
-      //All cars
-      case 4:
-        await this.car.printCarList();
-        await this.car.chooseACar(this.user);
-        this.showStartOptions();
-
-        break;
-
-      //Filter
-      case 5:
-        break;
-    }
-  }
-
-  public async showOptionsIfLoggedIn(): Promise<void> {
-    let answer: Answers<string> = await Console.showOptions(
-      [
-        "Search a car",
-        "All cars",
-        "Filter",
-      ],
-      "Which option do you want to choose?"
-    );
-
-    switch (answer.value) {
-      //Search a car
-      case 1:
-        break;
-
-      //All cars
-      case 2:
-        await this.car.printCarList();
-        await this.car.chooseACar(this.user);
-        this.showOptionsIfLoggedIn();
-
-        break;
-
-      //Filter
-      case 3:
-        break;
-    }
-  }
-
-  public async showOptionsIfAdminn(): Promise<void> {
-    let answer: Answers<string> = await Console.showOptions(
-      [
-        "Add a car",
-        "Search a car",
-        "All cars",
-        "Filter",
-      ],
-      "Which option do you want to choose?"
-    );
-
-    switch (answer.value) {
-      //Add a car
-      case 1:
-        await this.car.addCar();
-        break;
-
-      //Search a car
-      case 2:
-        break;
-
-      //All cars
-      case 3:
-        await this.car.printCarList();
-        await this.car.chooseACar(this.user);
-        this.showOptionsIfAdminn();
-        break;
-
-      //Filter
-      case 4:
-        break;
     }
   }
 }

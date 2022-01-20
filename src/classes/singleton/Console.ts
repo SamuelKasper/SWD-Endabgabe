@@ -62,6 +62,7 @@ class Console {
             name: 'value',
             message: _question,
             initial: new Date(),
+            mask: "YYYY-MM-DD HH:mm",
             validate: date => date < Date.now() ? 'You can only use future dates!' : true
         })
     }
