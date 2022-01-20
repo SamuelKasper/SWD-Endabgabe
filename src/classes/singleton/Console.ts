@@ -55,6 +55,16 @@ class Console {
             inactive: 'no'
         })
     }
+
+    public waitForDate(_question: string): Promise<Answers<string>> {
+        return prompts({
+            type: 'date',
+            name: 'value',
+            message: _question,
+            initial: new Date(),
+            validate: date => date < Date.now() ? 'You can only use future dates!' : true
+        })
+    }
 }
 // Export the instance of newConsole, so you can use it in other classes
 export default Console.getInstance();

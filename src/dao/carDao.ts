@@ -1,5 +1,5 @@
 export interface CarDao{
-    ID: string;
+    id: string;
     model: string;
     type: string;
     from: Date;

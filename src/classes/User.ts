@@ -7,6 +7,7 @@ import { State } from "./State";
 export class User {
     // Variable which represents the state of the user: guest, loggedIn, admin
     public accountState: State = new State();
+    public customer: string = "";
 
     //Register
     public async registerUser(): Promise<boolean> {
@@ -35,10 +36,11 @@ export class User {
     public async loginUser(): Promise<boolean> {
         // Ask user to input username and password
         let username: Answers<string> = await Console.waitForAnswers("Enter username:", 'text');
+        this.customer = username.value;
         let password: Answers<string> = await Console.waitForAnswers("Enter password", 'password');
 
         // Check if user is admin
-        if (username.value == "admin" && password.value == "superSecretPassword") {
+        if (username.value == "admin" && password.value == "123") {
             this.accountState.setState("admin");
             Console.printLine("\nLogged in as admin.\n\n");
             return true;
@@ -68,5 +70,10 @@ export class User {
             }
         }
         return true;
+    }
+
+    // Get account state
+    public getAccountState(): string {
+        return this.accountState.getState();
     }
 }

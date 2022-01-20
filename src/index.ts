@@ -58,8 +58,10 @@ export class Main {
 
       //All cars
       case 4:
-        await this.car.getCars();
-        await this.car.chooseACar();
+        await this.car.printCarList();
+        await this.car.chooseACar(this.user);
+        this.showStartOptions();
+
         break;
 
       //Filter
@@ -85,8 +87,10 @@ export class Main {
 
       //All cars
       case 2:
-        await this.car.getCars()
-        await this.car.chooseACar();
+        await this.car.printCarList();
+        await this.car.chooseACar(this.user);
+        this.showOptionsIfLoggedIn();
+
         break;
 
       //Filter
@@ -118,8 +122,9 @@ export class Main {
 
       //All cars
       case 3:
-        await this.car.getCars();
-        await this.car.chooseACar();
+        await this.car.printCarList();
+        await this.car.chooseACar(this.user);
+        this.showOptionsIfAdminn();
         break;
 
       //Filter
