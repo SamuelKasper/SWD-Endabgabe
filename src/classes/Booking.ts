@@ -15,6 +15,7 @@ export class Booking {
         this.customer = _customer;
     }
 
+    /** Main booking process */
     public async startBookProcess(): Promise<void> {
         // Ask for date, time and duration
         let reqDate: Answers<string> = await Console.waitForDate("Enter the date and the time you want to use the car:");
@@ -26,9 +27,9 @@ export class Booking {
             if (reqDuration.value <= this.car.maxDuration) {
                 // Get the bookings
                 let booking: BookingDao[] = await this.getBookings(this.car.model);
-
                 // Check if the car is at the given date and time free
                 let carIsFree: boolean = true;
+
                 for (let i = 0; i < booking.length; i++) {
                     let bookingDateNr: number = Date.parse(booking[i].from + "");
                     let reqDateNr: number = Date.parse(reqDate.value);
@@ -38,7 +39,6 @@ export class Booking {
 
                     // If request + duration < bookingDate or request > bookingDate + duration -> car is free
                     if (reqDateNr + reqDurationInMs < bookingDateNr || reqDateNr > bookingDateNr + bookingDurationInMs) {
-                        //console.log("true: " + reqDateNr + reqDurationInMs + "<" + bookingDateNr + "|" + reqDateNr + ">" +bookingDateNr + bookingDurationInMs);
                         //nothing
                     } else {
                         carIsFree = false;
@@ -70,7 +70,7 @@ export class Booking {
                 console.log("The maximum usage duration of this car is " + this.car.maxDuration + " minutes.\nPlease choose a shorter duration.");
                 await this.startBookProcess();
             }
-        }else {
+        } else {
             console.log("The car can only be used from " + this.car.from + " until " + this.car.to + ". Please choose another time.");
             await this.startBookProcess();
         }
@@ -88,17 +88,20 @@ export class Booking {
         return selectedBookings;
     }
 
+    /** Saves a car in the cars.json */
     public async bookACar(_reqDate: Date, _reqDuration: number, _price: number) {
         // Book the car
         let newBooking: BookingDao = { model: this.car.model, duration: _reqDuration, from: _reqDate, customer: this.customer.customer, price: _price };
         FileHandler.writeJsonFile("./files/Booking.json", newBooking);
     }
 
+    /** Calculates the price for the car */
     public calculatePrice(_duration: number, _price: number, _pricePerMinute: number): number {
         let totalPrice: number = _price + _duration * _pricePerMinute / 100;
         return totalPrice;
     }
 
+    /** Converts the given time (8:00 etc.) to minutes */
     public async convertToMinutes(_time: Date): Promise<number> {
         let timeString: string = _time + "";
         let timeSplitted = timeString.split(":");
@@ -106,6 +109,7 @@ export class Booking {
         return minutes;
     }
 
+    /** Check if the requested time is between the valid time */
     public async checkCarTimes(_reqDate: Date, _reqDuration: string): Promise<boolean> {
         let reqTime = new Date(_reqDate);
         let reqTimeInMinutes: number = reqTime.getHours() * 60 + reqTime.getMinutes();

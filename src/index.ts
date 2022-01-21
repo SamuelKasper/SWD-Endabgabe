@@ -118,6 +118,7 @@ export class Main {
     }
   }
 
+  /** Choose an option based on the accountState */
   public async decideOption() {
     // If user is admin
     if (this.user.accountState == "admin") {
