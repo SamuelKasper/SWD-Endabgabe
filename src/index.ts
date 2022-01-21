@@ -51,7 +51,7 @@ export class Main {
     this.selectOption(parseInt(answer.value + 1));
   }
 
-  public async showOptionsIfAdminn(): Promise<void> {
+  public async showOptionsIfAdmin(): Promise<void> {
     let answer: Answers<string> = await Console.showOptions(
       [
         "Add a car",
@@ -72,11 +72,13 @@ export class Main {
       //Add a cars
       case 1:
         await this.car.addCar();
+        await this.showOptionsIfAdmin();
         break;
 
       //Search a car
       case 2:
         await this.car.searchCar(this.user);
+        await this.decideOption();
         break;
 
       //All cars
@@ -107,19 +109,27 @@ export class Main {
       //Login
       case 8:
         if (await this.user.loginUser()) {
-          // If user is admin
-          if (this.user.accountState == "admin") {
-            await this.showOptionsIfAdminn();
-            break;
-            // If user is normal user
-          } else {
-            await this.showOptionsIfLoggedIn();
-            break;
-          }
+          await this.decideOption();
         } else {
+          // If user is guest
           await this.showStartOptions();
-          break;
         }
+        break;
+    }
+  }
+
+  public async decideOption() {
+    // If user is admin
+    if (this.user.accountState == "admin") {
+      await this.showOptionsIfAdmin();
+
+      // If user is normal user
+    } else if (this.user.accountState == "loggedIn") {
+      await this.showOptionsIfLoggedIn();
+
+      //If user is guest
+    } else {
+      await this.showStartOptions();
     }
   }
 }

@@ -20,52 +20,58 @@ export class Booking {
         let reqDate: Answers<string> = await Console.waitForDate("Enter the date and the time you want to use the car:");
         let reqDuration: Answers<string> = await Console.waitForAnswers("Enter the duration (minutes) you want to use the car", 'text');
 
-        // Check if the duration is valid
-        if (reqDuration.value <= this.car.maxDuration) {
-            // Get the bookings
-            let booking: BookingDao[] = await this.getBookings(this.car.model);
+        //Check if the requestet time is valid
+        if (await this.checkCarTimes(reqDate.value, reqDuration.value)) {
+            // Check if the duration is valid
+            if (reqDuration.value <= this.car.maxDuration) {
+                // Get the bookings
+                let booking: BookingDao[] = await this.getBookings(this.car.model);
 
-            // Check if the car is at the given date and time free
-            let carIsFree: boolean = true;
-            for (let i = 0; i < booking.length; i++) {
-                let bookingDateNr: number = Date.parse(booking[i].from + "");
-                let reqDateNr: number = Date.parse(reqDate.value);
-                // Convert the minutes into milliseconds
-                let reqDurationInMs: number = reqDuration.value*60*1000;
-                let bookingDurationInMs: number = booking[i].duration*60*1000;
+                // Check if the car is at the given date and time free
+                let carIsFree: boolean = true;
+                for (let i = 0; i < booking.length; i++) {
+                    let bookingDateNr: number = Date.parse(booking[i].from + "");
+                    let reqDateNr: number = Date.parse(reqDate.value);
+                    // Convert the minutes into milliseconds
+                    let reqDurationInMs: number = reqDuration.value * 60 * 1000;
+                    let bookingDurationInMs: number = booking[i].duration * 60 * 1000;
 
-                // If request + duration < bookingDate or request > bookingDate + duration -> car is free
-                if (reqDateNr + reqDurationInMs < bookingDateNr || reqDateNr > bookingDateNr + bookingDurationInMs) {
-                    //console.log("true: " + reqDateNr + reqDurationInMs + "<" + bookingDateNr + "|" + reqDateNr + ">" +bookingDateNr + bookingDurationInMs);
-                    //nothing
-                } else {
-                    carIsFree = false;
-                }
-            }
-
-            if (carIsFree) {
-                // Calculate the Price
-                let price: number = this.calculatePrice(reqDuration.value, this.car.price, this.car.pricePerMin);
-
-                let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + this.car.model + " would be: " + price + "€. Do you want to book this offer?");
-                if (confirmBooking.value == "1") {
-                    if (this.customer.getAccountState() == "guest") {
-                        console.log("Log in to book a car.");
+                    // If request + duration < bookingDate or request > bookingDate + duration -> car is free
+                    if (reqDateNr + reqDurationInMs < bookingDateNr || reqDateNr > bookingDateNr + bookingDurationInMs) {
+                        //console.log("true: " + reqDateNr + reqDurationInMs + "<" + bookingDateNr + "|" + reqDateNr + ">" +bookingDateNr + bookingDurationInMs);
+                        //nothing
                     } else {
-                        // Book the car
-                        await this.bookACar(reqDate.value, reqDuration.value, price);
-                        console.log("Car was successfully booked!");
+                        carIsFree = false;
+                    }
+                }
+
+                if (carIsFree) {
+                    // Calculate the Price
+                    let price: number = this.calculatePrice(reqDuration.value, this.car.price, this.car.pricePerMin);
+
+                    let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + this.car.model + " would be: " + price + "€. Do you want to book this offer?");
+                    if (confirmBooking.value == "1") {
+                        if (this.customer.getAccountState() == "guest") {
+                            console.log("Log in to book a car.");
+                        } else {
+                            // Book the car
+                            await this.bookACar(reqDate.value, reqDuration.value, price);
+                            console.log("Car was successfully booked!");
+                        }
+                    }
+                } else {
+                    console.log("The car is already booked at that time. Try another or time.");
+                    let carOrDate: Answers<string> = await Console.showOptions(["Other date", "Exit",], "Do you want to try another date?");
+                    if (carOrDate.value == "1") {
+                        await this.startBookProcess();
                     }
                 }
             } else {
-                console.log("The car is already booked at that time. Try another or time.");
-                let carOrDate: Answers<string> = await Console.showOptions(["Other date", "Exit",], "Do you want to try another date?");
-                if (carOrDate.value == "1") {
-                    await this.startBookProcess();
-                }
+                console.log("The maximum usage duration of this car is " + this.car.maxDuration + " minutes.\nPlease choose a shorter duration.");
+                await this.startBookProcess();
             }
-        } else {
-            console.log("The maximum usage duration of this car is " + this.car.maxDuration + " minutes.\nPlease choose a shorter duration.");
+        }else {
+            console.log("The car can only be used from " + this.car.from + " until " + this.car.to + ". Please choose another time.");
             await this.startBookProcess();
         }
     }
@@ -91,5 +97,26 @@ export class Booking {
     public calculatePrice(_duration: number, _price: number, _pricePerMinute: number): number {
         let totalPrice: number = _price + _duration * _pricePerMinute / 100;
         return totalPrice;
+    }
+
+    public async convertToMinutes(_time: Date): Promise<number> {
+        let timeString: string = _time + "";
+        let timeSplitted = timeString.split(":");
+        let minutes = parseInt(timeSplitted[0]) * 60 + parseInt(timeSplitted[1]);
+        return minutes;
+    }
+
+    public async checkCarTimes(_reqDate: Date, _reqDuration: string): Promise<boolean> {
+        let reqTime = new Date(_reqDate);
+        let reqTimeInMinutes: number = reqTime.getHours() * 60 + reqTime.getMinutes();
+        let reqTimeInMinutesWithDuration: number = reqTimeInMinutes + parseInt(_reqDuration);
+
+        let fromInMinutes: number = await this.convertToMinutes(this.car.from);
+        let toInMinutes: number = await this.convertToMinutes(this.car.to);
+
+        if (fromInMinutes < reqTimeInMinutes && reqTimeInMinutesWithDuration < toInMinutes) {
+            return true;
+        }
+        return false;
     }
 }

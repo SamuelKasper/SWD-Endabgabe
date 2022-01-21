@@ -72,7 +72,13 @@ export class Car {
                 }
             }
         }
-        this.showCarList(foundCars, _user);
+
+        if(foundCars.length==0){
+            console.log("No cars were found!");
+        }else{
+            await this.showCarList(foundCars, _user);
+        }
+        
     }
 
     /** Prints a list of cars to the console */
@@ -115,6 +121,7 @@ export class Car {
     public async selectACar(_list: CarDao[], _user: User): Promise<void> {
         let nr: Answers<string> = await Console.waitForAnswers("Enter the number of the car you want to reserve:", 'number');
         let selectedCar = _list[nr.value];
+        console.log("You selected: " + selectedCar.model);
         // If selected car exists call bookACar
         if (selectedCar != undefined) {
             let booking: Booking = new Booking(selectedCar, _user);
