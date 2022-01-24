@@ -7,10 +7,10 @@ import FileHandler from "./singleton/FileHandler";
 import { User } from "./User";
 
 export class Booking {
-    private car: CarDao;
-    private customer: User;
+    private car!: CarDao;
+    private customer!: User;
 
-    constructor(_selectedCar: CarDao, _customer: User) {
+    public setCarAndUser(_selectedCar: CarDao, _customer: User) {
         this.car = _selectedCar;
         this.customer = _customer;
     }
@@ -36,9 +36,11 @@ export class Booking {
                     // Convert the minutes into milliseconds
                     let reqDurationInMs: number = reqDuration.value * 60 * 1000;
                     let bookingDurationInMs: number = booking[i].duration * 60 * 1000;
+                    let reqDateWithDuration: number = reqDateNr + reqDurationInMs;
+                    let bookingDateWithDuration: number = bookingDateNr + bookingDurationInMs;
 
                     // If request + duration < bookingDate or request > bookingDate + duration -> car is free
-                    if (reqDateNr + reqDurationInMs < bookingDateNr || reqDateNr > bookingDateNr + bookingDurationInMs) {
+                    if (reqDateWithDuration < bookingDateNr || reqDateNr > bookingDateWithDuration) {
                         //nothing
                     } else {
                         carIsFree = false;
@@ -88,10 +90,15 @@ export class Booking {
         return selectedBookings;
     }
 
+    public async getAllBookings(): Promise<BookingDao[]> {
+        let bookings: BookingDao[] = await FileHandler.readJsonFile("./files/Booking.json");
+        return bookings;
+    }
+
     /** Saves a car in the cars.json */
     public async bookACar(_reqDate: Date, _reqDuration: number, _price: number) {
         // Book the car
-        let newBooking: BookingDao = { model: this.car.model, duration: _reqDuration, from: _reqDate, customer: this.customer.customer, price: _price };
+        let newBooking: BookingDao = { carId: this.car.id, model: this.car.model, duration: _reqDuration, from: _reqDate, customer: this.customer.customer, price: _price };
         FileHandler.writeJsonFile("./files/Booking.json", newBooking);
     }
 
@@ -122,5 +129,50 @@ export class Booking {
             return true;
         }
         return false;
+    }
+
+    /** Check if the car is free at that date and time */
+    public async checkCarIsFree(_cars: CarDao[]): Promise<CarDao[]> {
+        // Ask for date, time and duration
+        let reqDate: Answers<string> = await Console.waitForDate("Enter the date and the time you want to use the car:");
+        let reqDuration: Answers<string> = await Console.waitForAnswers("Enter the duration (minutes) you want to use the car", 'text');
+        // Get the bookings
+        let booking: BookingDao[] = await this.getAllBookings();
+        // Check if the car is at the given date and time free
+        let availableCars: CarDao[] = [];
+        let availableCounter: number = 0;
+
+        for (let i = 0; i < booking.length; i++) {
+            let bookingDateNr: number = Date.parse(booking[i].from + "");
+            let reqDateNr: number = Date.parse(reqDate.value);
+            // Convert the minutes into milliseconds
+            let reqDurationInMs: number = reqDuration.value * 60 * 1000;
+            let bookingDurationInMs: number = booking[i].duration * 60 * 1000;
+            let reqDateWithDuration: number = reqDateNr + reqDurationInMs;
+            let bookingDateWithDuration: number = bookingDateNr + bookingDurationInMs;
+            let alreadyAdded: boolean = false;
+
+            // check if car is free and save the car in the availableCars array
+            if (reqDateWithDuration < bookingDateNr || reqDateNr > bookingDateWithDuration) {
+                for (let j = 0; j < _cars.length; j++) {
+                    if (_cars[j].id == booking[i].carId) {
+                        for (let k = 0; k < availableCars.length; k++) {
+                            if (availableCars[k].id == _cars[j].id) {
+                                alreadyAdded = true;
+                            }
+                        }
+                        if (!alreadyAdded) {
+                            availableCars[availableCounter] = _cars[j];
+                            availableCounter++;
+                        }
+                    }
+                }
+            }
+        }
+
+        /* for (let i = 0; i < availableCars.length; i++) {
+            console.log(availableCars[i].model);
+        } */
+        return availableCars;
     }
 }

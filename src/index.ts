@@ -4,11 +4,13 @@ import Console from './classes/singleton/Console';
 import { User } from './classes/User';
 import { Car } from './classes/Car';
 import { CarDao } from './dao/carDao';
+import { Booking } from './classes/Booking';
 
 export class Main {
   public consoleLine: readline.ReadLine;
   public user: User = new User();
   public car: Car = new Car();
+  public booking: Booking = new Booking();
 
   constructor() {
     this.consoleLine = readline.createInterface({
@@ -68,6 +70,7 @@ export class Main {
   }
 
   public async selectOption(_option: number) {
+    let list: CarDao[] = await this.car.getAllCars();
     switch (_option) {
       //Add a cars
       case 1:
@@ -83,13 +86,13 @@ export class Main {
 
       //All cars
       case 3:
-        let list: CarDao[] = await this.car.getAllCars();
         await this.car.showCarList(list, this.user);
         await this.showStartOptions();
         break;
 
       //Filter
       case 4:
+        await this.car.filterCars(list, this.user);
         break;
 
       //Statistic
