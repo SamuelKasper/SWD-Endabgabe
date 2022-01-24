@@ -1,10 +1,8 @@
 import { Answers } from "prompts";
 import { CarDao } from "../dao/carDao";
-import { UserDao } from "../dao/userDao";
 import { Booking } from "./Booking";
 import Console from "./singleton/Console";
 import FileHandler from "./singleton/FileHandler";
-import { User } from "./User";
 
 export class Car {
     public booking: Booking = new Booking();
@@ -58,7 +56,7 @@ export class Car {
     }
 
     /** Search for a car and return a list of found cars */
-    public async searchCar(_user: User) {
+    public async searchCar():Promise<CarDao[]> {
         // Ask for model and drive type
         let searchString: Answers<string> = await Console.waitForAnswers("Search for a car:", 'text');
         let type: Answers<string> = await Console.showOptions(["Electronic", "Conventional",], "Select the drive type:");
@@ -73,17 +71,11 @@ export class Car {
                 }
             }
         }
-
-        if (foundCars.length == 0) {
-            console.log("No cars were found!");
-        } else {
-            await this.showCarList(foundCars, _user);
-        }
-
+        return foundCars;
     }
 
     /** Prints a list of cars to the console */
-    public async showCarList(_list: CarDao[], _user: User) {
+    public async showCarList(_list: CarDao[]) {
         console.log("------- " + _list.length + " result/s -------");
 
         // If there are less than 10 cars in the list
@@ -115,43 +107,22 @@ export class Car {
                 }
             }
         }
-        await this.selectACar(_list, _user);
     }
 
     /** Select a car from a list*/
-    public async selectACar(_list: CarDao[], _user: User): Promise<void> {
+    public async selectACar(_list: CarDao[]): Promise<CarDao> {
         let nr: Answers<string> = await Console.waitForAnswers("Enter the number of the car you want to reserve:", 'number');
         //Check if input is valid
         if (parseInt(nr.value) > _list.length-1 || parseInt(nr.value) < 0) {
             console.log("Invalid input!");
-            this.selectACar(_list, _user);
-        } else {
-            let selectedCar = _list[nr.value];
-            console.log("You selected: " + selectedCar.model);
-            // If selected car exists call bookACar
-            if (selectedCar != undefined) {
-                this.booking.setCarAndUser(selectedCar, _user);
-                await this.booking.startBookProcess();
-            }
-        }
+            this.selectACar(_list);
+        } 
+        return _list[nr.value];
     }
 
     /** Get a list of all cars */
     public async getAllCars(): Promise<CarDao[]> {
         let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
         return cars;
-    }
-
-    /** Filer for cars */
-    public async filterCars(_list: CarDao[], _user: User) {
-        let filteredCars: CarDao[] = await this.booking.checkCarIsFree(_list);
-        /**
-         * 
-         * 
-         * SHOW CARLIST FÜHRT DAZU DASS DAS DATUM ETC WIEDER AUSGEWÄHLT WERDEN MUSS. DAS IST FALSCH!!
-         * 
-         */
-        this.showCarList(filteredCars, _user);
-
     }
 }

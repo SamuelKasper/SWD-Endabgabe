@@ -80,19 +80,50 @@ export class Main {
 
       //Search a car
       case 2:
-        await this.car.searchCar(this.user);
+        let foundCars = await this.car.searchCar();
+        if (foundCars.length == 0) {
+          console.log("No cars were found!");
+
+        } else {
+          await this.car.showCarList(foundCars);
+
+          let selectedCar = await this.car.selectACar(foundCars);
+          console.log("You selected: " + selectedCar.model);
+
+          // If selected car exists call bookACar
+          if (selectedCar != undefined) {
+            //this.booking.setCarAndUser(selectedCar, this.user);
+            let bookingProperties = await this.booking.startBookProcess(selectedCar, this.user);
+            this.booking.bookACar(new Date(bookingProperties[0]), parseInt(bookingProperties[1]), parseInt(bookingProperties[2]), this.user, selectedCar);
+            console.log("Car was successfully booked!");
+          }
+        }
         await this.decideOption();
         break;
 
       //All cars
       case 3:
-        await this.car.showCarList(list, this.user);
+        await this.car.showCarList(list);
+        let selectedCar = await this.car.selectACar(list);
+        console.log("You selected: " + selectedCar.model);
+
+        // If selected car exists call bookACar
+        if (selectedCar != undefined) {
+          //this.booking.setCarAndUser(selectedCar, this.user);
+          let bookingProperties = await this.booking.startBookProcess(selectedCar, this.user);
+          this.booking.bookACar(new Date(bookingProperties[0]), parseInt(bookingProperties[1]), parseInt(bookingProperties[2]), this.user, selectedCar);
+          console.log("Car was successfully booked!");
+        }
         await this.showStartOptions();
         break;
 
       //Filter
       case 4:
-        await this.car.filterCars(list, this.user);
+        let filteredCars: CarDao[] = await this.booking.checkCarIsFree(list);
+        await this.car.showCarList(filteredCars);
+        let selectedCar2 = await this.car.selectACar(list);
+        console.log("You selected: " + selectedCar2.model);
+        
         break;
 
       //Statistic

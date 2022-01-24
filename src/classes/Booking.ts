@@ -1,32 +1,24 @@
 import { Answers } from "prompts";
 import { BookingDao } from "../dao/bookingDao";
 import { CarDao } from "../dao/carDao";
-import { UserDao } from "../dao/userDao";
 import Console from "./singleton/Console";
 import FileHandler from "./singleton/FileHandler";
 import { User } from "./User";
 
 export class Booking {
-    private car!: CarDao;
-    private customer!: User;
-
-    public setCarAndUser(_selectedCar: CarDao, _customer: User) {
-        this.car = _selectedCar;
-        this.customer = _customer;
-    }
-
     /** Main booking process */
-    public async startBookProcess(): Promise<void> {
+    public async startBookProcess(_car: CarDao, _user: User): Promise<string[]> {
         // Ask for date, time and duration
         let reqDate: Answers<string> = await Console.waitForDate("Enter the date and the time you want to use the car:");
         let reqDuration: Answers<string> = await Console.waitForAnswers("Enter the duration (minutes) you want to use the car", 'text');
+        let bookingProperties: string[] = [];
 
         //Check if the requestet time is valid
-        if (await this.checkCarTimes(reqDate.value, reqDuration.value)) {
+        if (await this.checkCarTimes(reqDate.value, reqDuration.value, _car)) {
             // Check if the duration is valid
-            if (reqDuration.value <= this.car.maxDuration) {
+            if (reqDuration.value <= _car.maxDuration) {
                 // Get the bookings
-                let booking: BookingDao[] = await this.getBookings(this.car.model);
+                let booking: BookingDao[] = await this.getBookings(_car.model);
                 // Check if the car is at the given date and time free
                 let carIsFree: boolean = true;
 
@@ -49,33 +41,35 @@ export class Booking {
 
                 if (carIsFree) {
                     // Calculate the Price
-                    let price: number = this.calculatePrice(reqDuration.value, this.car.price, this.car.pricePerMin);
+                    let price: number = this.calculatePrice(reqDuration.value, _car.price, _car.pricePerMin);
 
-                    let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + this.car.model + " would be: " + price + "€. Do you want to book this offer?");
+                    let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + _car.model + " would be: " + price + "€. Do you want to book this offer?");
                     if (confirmBooking.value == "1") {
-                        if (this.customer.getAccountState() == "guest") {
+                        if (_user.getAccountState() == "guest") {
                             console.log("Log in to book a car.");
                         } else {
                             // Book the car
-                            await this.bookACar(reqDate.value, reqDuration.value, price);
-                            console.log("Car was successfully booked!");
+                            bookingProperties[0] = reqDate.value;
+                            bookingProperties[1] = reqDuration.value;
+                            bookingProperties[2] = price +"";
                         }
                     }
                 } else {
                     console.log("The car is already booked at that time. Try another or time.");
                     let carOrDate: Answers<string> = await Console.showOptions(["Other date", "Exit",], "Do you want to try another date?");
                     if (carOrDate.value == "1") {
-                        await this.startBookProcess();
+                        await this.startBookProcess(_car, _user);
                     }
                 }
             } else {
-                console.log("The maximum usage duration of this car is " + this.car.maxDuration + " minutes.\nPlease choose a shorter duration.");
-                await this.startBookProcess();
+                console.log("The maximum usage duration of this car is " + _car.maxDuration + " minutes.\nPlease choose a shorter duration.");
+                await this.startBookProcess(_car, _user);
             }
         } else {
-            console.log("The car can only be used from " + this.car.from + " until " + this.car.to + ". Please choose another time.");
-            await this.startBookProcess();
+            console.log("The car can only be used from " + _car.from + " until " + _car.to + ". Please choose another time.");
+            await this.startBookProcess(_car, _user);
         }
+        return bookingProperties;
     }
 
     /** Returns an array of type BookingDao with the bookings of the given car */
@@ -96,9 +90,9 @@ export class Booking {
     }
 
     /** Saves a car in the cars.json */
-    public async bookACar(_reqDate: Date, _reqDuration: number, _price: number) {
+    public async bookACar(_reqDate: Date, _reqDuration: number, _price: number, _user: User, _car: CarDao) {
         // Book the car
-        let newBooking: BookingDao = { carId: this.car.id, model: this.car.model, duration: _reqDuration, from: _reqDate, customer: this.customer.customer, price: _price };
+        let newBooking: BookingDao = { carId: _car.id, model: _car.model, duration: _reqDuration, from: _reqDate, customer: _user.customer, price: _price };
         FileHandler.writeJsonFile("./files/Booking.json", newBooking);
     }
 
@@ -117,13 +111,13 @@ export class Booking {
     }
 
     /** Check if the requested time is between the valid time */
-    public async checkCarTimes(_reqDate: Date, _reqDuration: string): Promise<boolean> {
+    public async checkCarTimes(_reqDate: Date, _reqDuration: string, _car: CarDao): Promise<boolean> {
         let reqTime = new Date(_reqDate);
         let reqTimeInMinutes: number = reqTime.getHours() * 60 + reqTime.getMinutes();
         let reqTimeInMinutesWithDuration: number = reqTimeInMinutes + parseInt(_reqDuration);
 
-        let fromInMinutes: number = await this.convertToMinutes(this.car.from);
-        let toInMinutes: number = await this.convertToMinutes(this.car.to);
+        let fromInMinutes: number = await this.convertToMinutes(_car.from);
+        let toInMinutes: number = await this.convertToMinutes(_car.to);
 
         if (fromInMinutes < reqTimeInMinutes && reqTimeInMinutesWithDuration < toInMinutes) {
             return true;
@@ -169,10 +163,6 @@ export class Booking {
                 }
             }
         }
-
-        /* for (let i = 0; i < availableCars.length; i++) {
-            console.log(availableCars[i].model);
-        } */
         return availableCars;
     }
 }
