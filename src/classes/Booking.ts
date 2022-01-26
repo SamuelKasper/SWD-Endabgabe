@@ -1,8 +1,6 @@
 import { Answers } from "prompts";
-import { CaseOrDefaultClause } from "typescript";
 import { BookingDao } from "../dao/bookingDao";
 import { CarDao } from "../dao/carDao";
-import { UserDao } from "../dao/userDao";
 import Console from "./singleton/Console";
 import FileHandler from "./singleton/FileHandler";
 import { User } from "./User";
@@ -212,6 +210,7 @@ export class Booking {
     //------------------------------------------------------------------------------# START: Show previous or upcoming bookings #
     /** Choose between old or new bookings and call printBookings */
     public async decideWhichBookings(_user: string, _booking: BookingDao[], _old: boolean) {
+        let amountOfBookings: number = 0;
         if (_user == "") {
             console.log("Log in to show your bookings");
         } else {
@@ -219,15 +218,20 @@ export class Booking {
                 if (_user == _booking[i].customer) {
                     if (_old) {
                         if (Date.parse(_booking[i].from + "") < Date.parse(new Date() + "")) {
+                            amountOfBookings++;
                             this.printBookings(_booking[i]);
                         }
                     } else {
                         if (Date.parse(_booking[i].from + "") > Date.parse(new Date() + "")) {
+                            amountOfBookings
                             this.printBookings(_booking[i]);
                         }
                     }
                     console.log("");
                 }
+            }
+            if(amountOfBookings == 0){
+                console.log("No bookings were found!");
             }
         }
     }
@@ -276,5 +280,30 @@ export class Booking {
 
         return converted;
     }
-    //------------------------------------------------------------------------------# END: Show previous or upcoming bookings #
+
+    //------------------------------------------------------------------------------# START: Show total and average costs #
+    /** Print accumulated prices */
+    public printAccumulatedOrAveragePrice(_user: string, _booking: BookingDao[], _average: boolean) {
+        let accumulatedPrice: number = 0;
+        let amountBookings: number = 0;
+        let averagePrice: number = 0;
+
+        if (_user == "") {
+            console.log("Log in to show your bookings.");
+        } else {
+            for (let i = 0; i < _booking.length; i++) {
+                if (_user == _booking[i].customer) {
+                    amountBookings++;
+                    accumulatedPrice = accumulatedPrice + _booking[i].price;
+                }
+            }
+
+            if (_average) {
+                averagePrice = accumulatedPrice / amountBookings;
+                console.log("The average price of all of your bookings is: " + averagePrice.toFixed(2) + "€");
+            } else {
+                console.log("The accumulated price of all of your bookings is: " + accumulatedPrice + "€");
+            }
+        }
+    }
 }

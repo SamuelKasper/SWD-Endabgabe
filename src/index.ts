@@ -145,16 +145,24 @@ export class Main {
 
       //Statistic
       case 5:
+        let allBookings: BookingDao[] = await this.booking.getAllBookings();
+        let answer: Answers<string> = await Console.showOptions(["average", "accumulated",], "Show the accumulated or the average price?");
+        if (answer.value == 1) {
+          this.booking.printAccumulatedOrAveragePrice(this.user.customer, allBookings, true);
+        } else {
+          this.booking.printAccumulatedOrAveragePrice(this.user.customer, allBookings, false);
+        }
+        await this.showStartOptions();
         break;
 
       //Bookings
       case 6:
-        let allBookings: BookingDao[] = await this.booking.getAllBookings();
-        let answer: Answers<string> = await Console.showOptions(["Previous", "Upcoming",], "Show the previous or the upcoming bookings??");
-        if (answer.value == 1) {
-          this.booking.decideWhichBookings(this.user.customer, allBookings, true);
+        let allBookings2: BookingDao[] = await this.booking.getAllBookings();
+        let answer2: Answers<string> = await Console.showOptions(["Previous", "Upcoming",], "Show the previous or the upcoming bookings?");
+        if (answer2.value == 1) {
+          this.booking.decideWhichBookings(this.user.customer, allBookings2, true);
         } else {
-          this.booking.decideWhichBookings(this.user.customer, allBookings, false);
+          this.booking.decideWhichBookings(this.user.customer, allBookings2, false);
         }
         await this.showStartOptions();
         break;
