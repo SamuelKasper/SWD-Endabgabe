@@ -56,7 +56,7 @@ export class Car {
     }
 
     /** Search for a car and return a list of found cars */
-    public async searchCar():Promise<CarDao[]> {
+    public async searchCar(): Promise<CarDao[]> {
         // Ask for model and drive type
         let searchString: Answers<string> = await Console.waitForAnswers("Search for a car:", 'text');
         let type: Answers<string> = await Console.showOptions(["Electronic", "Conventional",], "Select the drive type:");
@@ -99,11 +99,13 @@ export class Car {
             }
             //Show all cars if the user wants to
             let answer: Answers<string> = await Console.waitForAnswers("Do you want to see all cars?", 'toggle');
-            for (let i = 0; i < _list.length; i++) {
-                if (_list[i].type == "1") {
-                    console.log(i + ": " + _list[i].model + " (E)");
-                } else {
-                    console.log(i + ": " + _list[i].model);
+            if (answer.value == true) {
+                for (let i = 0; i < _list.length; i++) {
+                    if (_list[i].type == "1") {
+                        console.log(i + ": " + _list[i].model + " (E)");
+                    } else {
+                        console.log(i + ": " + _list[i].model);
+                    }
                 }
             }
         }
@@ -113,10 +115,10 @@ export class Car {
     public async selectACar(_list: CarDao[]): Promise<CarDao> {
         let nr: Answers<string> = await Console.waitForAnswers("Enter the number of the car you want to reserve:", 'number');
         //Check if input is valid
-        if (parseInt(nr.value) > _list.length-1 || parseInt(nr.value) < 0) {
+        if (parseInt(nr.value) > _list.length - 1 || parseInt(nr.value) < 0) {
             console.log("Invalid input!");
             this.selectACar(_list);
-        } 
+        }
         return _list[nr.value];
     }
 

@@ -2,7 +2,6 @@ import { Answers } from "prompts";
 import { UserDao } from "../dao/userDao";
 import Console from "./singleton/Console";
 import FileHandler from "./singleton/FileHandler";
-import { State } from "./State";
 
 export class User {
     // Variable which represents the state of the user: guest, loggedIn, admin

@@ -1,6 +1,8 @@
 import { Answers } from "prompts";
+import { CaseOrDefaultClause } from "typescript";
 import { BookingDao } from "../dao/bookingDao";
 import { CarDao } from "../dao/carDao";
+import { UserDao } from "../dao/userDao";
 import Console from "./singleton/Console";
 import FileHandler from "./singleton/FileHandler";
 import { User } from "./User";
@@ -11,63 +13,78 @@ export class Booking {
         // Ask for date, time and duration
         let reqDate: Answers<string> = await Console.waitForDate("Enter the date and the time you want to use the car:");
         let reqDuration: Answers<string> = await Console.waitForAnswers("Enter the duration (minutes) you want to use the car", 'text');
+        let booking: BookingDao[] = await this.getBookings(_car.model);
+        let dateAndTimeValid: boolean = false;
+        let durationValid: boolean = false;
+        let carIsFree: boolean = false;
         let bookingProperties: string[] = [];
 
-        //Check if the requestet time is valid
+        //Check if the requestet time is valid (cars can only be used at specific times)
         if (await this.checkCarTimes(reqDate.value, reqDuration.value, _car)) {
-            // Check if the duration is valid
-            if (reqDuration.value <= _car.maxDuration) {
-                // Get the bookings
-                let booking: BookingDao[] = await this.getBookings(_car.model);
-                // Check if the car is at the given date and time free
-                let carIsFree: boolean = true;
-
-                for (let i = 0; i < booking.length; i++) {
-                    let bookingDateNr: number = Date.parse(booking[i].from + "");
-                    let reqDateNr: number = Date.parse(reqDate.value);
-                    // Convert the minutes into milliseconds
-                    let reqDurationInMs: number = reqDuration.value * 60 * 1000;
-                    let bookingDurationInMs: number = booking[i].duration * 60 * 1000;
-                    let reqDateWithDuration: number = reqDateNr + reqDurationInMs;
-                    let bookingDateWithDuration: number = bookingDateNr + bookingDurationInMs;
-
-                    // If request + duration < bookingDate or request > bookingDate + duration -> car is free
-                    if (reqDateWithDuration < bookingDateNr || reqDateNr > bookingDateWithDuration) {
-                        //nothing
-                    } else {
-                        carIsFree = false;
-                    }
-                }
-
-                if (carIsFree) {
-                    // Calculate the Price
-                    let price: number = this.calculatePrice(reqDuration.value, _car.price, _car.pricePerMin);
-
-                    let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + _car.model + " would be: " + price + "€. Do you want to book this offer?");
-                    if (confirmBooking.value == "1") {
-                        if (_user.getAccountState() == "guest") {
-                            console.log("Log in to book a car.");
-                        } else {
-                            // Book the car
-                            bookingProperties[0] = reqDate.value;
-                            bookingProperties[1] = reqDuration.value;
-                            bookingProperties[2] = price +"";
-                        }
-                    }
-                } else {
-                    console.log("The car is already booked at that time. Try another or time.");
-                    let carOrDate: Answers<string> = await Console.showOptions(["Other date", "Exit",], "Do you want to try another date?");
-                    if (carOrDate.value == "1") {
-                        await this.startBookProcess(_car, _user);
-                    }
-                }
-            } else {
-                console.log("The maximum usage duration of this car is " + _car.maxDuration + " minutes.\nPlease choose a shorter duration.");
-                await this.startBookProcess(_car, _user);
-            }
+            dateAndTimeValid = true;
         } else {
             console.log("The car can only be used from " + _car.from + " until " + _car.to + ". Please choose another time.");
             await this.startBookProcess(_car, _user);
+        }
+
+        // Check if the duration is valid (cars can only be used for a specific duration)
+        if (reqDuration.value <= _car.maxDuration) {
+            durationValid = true;
+        } else {
+            console.log("The maximum usage duration of this car is " + _car.maxDuration + " minutes.\nPlease choose a shorter duration.");
+            await this.startBookProcess(_car, _user);
+        }
+
+        //If the car has not been booked ever
+        let carCounter: number = 0;
+        for (let i = 0; i < booking.length; i++) {
+            if (booking[i].carId == _car.id) {
+                carCounter++;
+            }
+        }
+
+        if (carCounter == 0) {
+            carIsFree = true;
+        } else {
+            // Check if the car is free at the date and time (check id the car is already booked)
+
+            if (await this.checkCarIsFree(booking, reqDate.value, reqDuration.value)) {
+                carIsFree = true;
+            } else {
+                console.log("The car is already booked at that time. Try another or time.");
+                let carOrDate: Answers<string> = await Console.showOptions(["Other date", "Exit",], "Do you want to try another date?");
+                if (carOrDate.value == "1") {
+                    await this.startBookProcess(_car, _user);
+                } else {
+                    bookingProperties[0] = "exit";
+                }
+            }
+        }
+
+        if (dateAndTimeValid && durationValid && carIsFree) {
+            bookingProperties = await this.createBookingProperties(_car, reqDuration.value, reqDate.value, _user);
+        }
+        return bookingProperties;
+    }
+
+    public async createBookingProperties(_car: CarDao, _reqDuration: number, _reqDate: string, _user: User): Promise<string[]> {
+        let bookingProperties: string[] = [];
+        bookingProperties[0] = "exit";
+
+        // Calculate the Price
+        let price: number = this.calculatePrice(_reqDuration, _car.price, _car.pricePerMin);
+
+        let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + _car.model + " would be: " + price + "€. Do you want to book this offer?");
+        if (confirmBooking.value == "1") {
+            if (_user.getAccountState() == "guest") {
+                console.log("Log in to book a car.");
+            } else {
+                // Book the car
+                bookingProperties[0] = "ok";
+                bookingProperties[1] = _reqDate;
+                bookingProperties[2] = _reqDuration + "";
+                bookingProperties[3] = price + "";
+            }
         }
         return bookingProperties;
     }
@@ -125,44 +142,139 @@ export class Booking {
         return false;
     }
 
-    /** Check if the car is free at that date and time */
-    public async checkCarIsFree(_cars: CarDao[]): Promise<CarDao[]> {
-        // Ask for date, time and duration
-        let reqDate: Answers<string> = await Console.waitForDate("Enter the date and the time you want to use the car:");
-        let reqDuration: Answers<string> = await Console.waitForAnswers("Enter the duration (minutes) you want to use the car", 'text');
+    /** Check if the car is at the given date and time free*/
+    public async checkCarIsFree(_booking: BookingDao[], _reqDate: string, _reqDuration: number): Promise<boolean> {
+        // Would be null if there is no booking for this car
+        for (let i = 0; i < _booking.length; i++) {
+            let bookingDateNr: number = Date.parse(_booking[i].from + "");
+            let reqDateNr: number = Date.parse(_reqDate);
+            // Convert the minutes into milliseconds
+            let reqDurationInMs: number = _reqDuration * 60 * 1000;
+            let bookingDurationInMs: number = _booking[i].duration * 60 * 1000;
+            let reqDateWithDuration: number = reqDateNr + reqDurationInMs;
+            let bookingDateWithDuration: number = bookingDateNr + bookingDurationInMs;
+
+            // If request + duration < bookingDate or request > bookingDate + duration -> car is free
+            console.log(reqDateWithDuration + "<" + bookingDateNr + "||" + reqDateNr + ">" + bookingDateWithDuration);
+            if (reqDateWithDuration < bookingDateNr || reqDateNr > bookingDateWithDuration) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Check which cars are free at the given Date date and time and return them */
+    public async getAvailableCars(_cars: CarDao[], _date: string, _duration: number): Promise<CarDao[]> {
         // Get the bookings
         let booking: BookingDao[] = await this.getAllBookings();
         // Check if the car is at the given date and time free
         let availableCars: CarDao[] = [];
-        let availableCounter: number = 0;
 
         for (let i = 0; i < booking.length; i++) {
             let bookingDateNr: number = Date.parse(booking[i].from + "");
-            let reqDateNr: number = Date.parse(reqDate.value);
+            let reqDateNr: number = Date.parse(_date);
             // Convert the minutes into milliseconds
-            let reqDurationInMs: number = reqDuration.value * 60 * 1000;
+            let reqDurationInMs: number = _duration * 60 * 1000;
             let bookingDurationInMs: number = booking[i].duration * 60 * 1000;
             let reqDateWithDuration: number = reqDateNr + reqDurationInMs;
             let bookingDateWithDuration: number = bookingDateNr + bookingDurationInMs;
-            let alreadyAdded: boolean = false;
 
             // check if car is free and save the car in the availableCars array
             if (reqDateWithDuration < bookingDateNr || reqDateNr > bookingDateWithDuration) {
                 for (let j = 0; j < _cars.length; j++) {
                     if (_cars[j].id == booking[i].carId) {
-                        for (let k = 0; k < availableCars.length; k++) {
-                            if (availableCars[k].id == _cars[j].id) {
-                                alreadyAdded = true;
-                            }
-                        }
-                        if (!alreadyAdded) {
-                            availableCars[availableCounter] = _cars[j];
-                            availableCounter++;
-                        }
+                        availableCars[j] = _cars[j];
                     }
                 }
             }
         }
+
+        // Add also cars, which have never been booked. ??
+        for (let j = 0; j < _cars.length; j++) {
+            if (availableCars[j] == undefined) {
+                availableCars[j] = _cars[j]
+            }
+        }
         return availableCars;
     }
+
+    /** Ask the user to input the Date and duration */
+    public async getDateAndDuration(): Promise<string[]> {
+        let dateAndDuration: string[] = [];
+        // Ask for date, time and duration
+        let reqDate: Answers<string> = await Console.waitForDate("Enter the date and the time you want to use the car:");
+        let reqDuration: Answers<string> = await Console.waitForAnswers("Enter the duration (minutes) you want to use the car", 'text');
+        dateAndDuration[0] = reqDate.value;
+        dateAndDuration[1] = reqDuration.value;
+        return dateAndDuration;
+    }
+
+    //------------------------------------------------------------------------------# START: Show previous or upcoming bookings #
+    /** Choose between old or new bookings and call printBookings */
+    public async decideWhichBookings(_user: string, _booking: BookingDao[], _old: boolean) {
+        if (_user == "") {
+            console.log("Log in to show your bookings");
+        } else {
+            for (let i = 0; i < _booking.length; i++) {
+                if (_user == _booking[i].customer) {
+                    if (_old) {
+                        if (Date.parse(_booking[i].from + "") < Date.parse(new Date() + "")) {
+                            this.printBookings(_booking[i]);
+                        }
+                    } else {
+                        if (Date.parse(_booking[i].from + "") > Date.parse(new Date() + "")) {
+                            this.printBookings(_booking[i]);
+                        }
+                    }
+                    console.log("");
+                }
+            }
+        }
+    }
+
+    /** Prints the past or future bookings */
+    public printBookings(_booking: BookingDao) {
+        // Get the converted and formatted string values
+        let convertedValues: string[] = this.getConvertedBookingDateAndTime(_booking);
+        console.log("Booked car: " + _booking.model);
+        console.log("Customer: " + _booking.customer);
+        console.log("Date: " + convertedValues[0] + "." + convertedValues[1] + "." + convertedValues[2] + ", " + convertedValues[3] + ":" + convertedValues[4]);
+        console.log("Duration: " + _booking.duration + " minutes");
+    }
+
+    /** Converts the Date to single numbers and returns them in an array */
+    public getConvertedBookingDateAndTime(_booking: BookingDao): string[] {
+        // variables
+        let converted: string[] = [];
+        let dayString: string = "", monthString: string = "", yearString: string = "", hoursString: string = "", minutesString: string = "";
+
+        //format day
+        let dayNr: number = new Date(_booking.from).getDate();
+        if (dayNr < 10) { dayString = "0" + dayNr; } else { dayString = dayNr + ""; }
+        converted.push(dayString);
+
+        //format month
+        let monthNr: number = new Date(_booking.from).getMonth();
+        monthNr = monthNr + 1;
+        if (monthNr < 10) { monthString = "0" + monthNr; } else { monthString = monthNr + ""; }
+        converted.push(monthString);
+
+        //format year
+        let yearNr: number = new Date(_booking.from).getFullYear();
+        if (yearNr < 10) { yearString = "0" + yearNr; } else { yearString = yearNr + ""; }
+        converted.push(yearString);
+
+        //format hours
+        let hoursNr: number = new Date(_booking.from).getHours();
+        if (hoursNr < 10) { hoursString = "0" + hoursNr; } else { hoursString = hoursNr + ""; }
+        converted.push(hoursString);
+
+        //format minutes
+        let minutesNr: number = new Date(_booking.from).getMinutes();
+        if (minutesNr < 10) { minutesString = "0" + minutesNr; } else { minutesString = minutesNr + ""; }
+        converted.push(minutesString);
+
+        return converted;
+    }
+    //------------------------------------------------------------------------------# END: Show previous or upcoming bookings #
 }

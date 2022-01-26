@@ -5,6 +5,7 @@ import { User } from './classes/User';
 import { Car } from './classes/Car';
 import { CarDao } from './dao/carDao';
 import { Booking } from './classes/Booking';
+import { BookingDao } from './dao/bookingDao';
 
 export class Main {
   public consoleLine: readline.ReadLine;
@@ -94,8 +95,12 @@ export class Main {
           if (selectedCar != undefined) {
             //this.booking.setCarAndUser(selectedCar, this.user);
             let bookingProperties = await this.booking.startBookProcess(selectedCar, this.user);
-            this.booking.bookACar(new Date(bookingProperties[0]), parseInt(bookingProperties[1]), parseInt(bookingProperties[2]), this.user, selectedCar);
-            console.log("Car was successfully booked!");
+            if (bookingProperties[0] == "ok") {
+              this.booking.bookACar(new Date(bookingProperties[0]), parseInt(bookingProperties[1]), parseInt(bookingProperties[2]), this.user, selectedCar);
+              console.log("Car was successfully booked!");
+            } else {
+              console.log("Booking process was stopped. Returning to menu.");
+            }
           }
         }
         await this.decideOption();
@@ -111,19 +116,31 @@ export class Main {
         if (selectedCar != undefined) {
           //this.booking.setCarAndUser(selectedCar, this.user);
           let bookingProperties = await this.booking.startBookProcess(selectedCar, this.user);
-          this.booking.bookACar(new Date(bookingProperties[0]), parseInt(bookingProperties[1]), parseInt(bookingProperties[2]), this.user, selectedCar);
-          console.log("Car was successfully booked!");
+          if (bookingProperties[0] == "ok") {
+            this.booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), this.user, selectedCar);
+            console.log("Car was successfully booked!");
+          } else {
+            console.log("Booking process was stopped. Returning to menu.");
+          }
         }
         await this.showStartOptions();
         break;
 
       //Filter
       case 4:
-        let filteredCars: CarDao[] = await this.booking.checkCarIsFree(list);
+        let dateAndDuration: string[] = await this.booking.getDateAndDuration();
+        let filteredCars: CarDao[] = await this.booking.getAvailableCars(list, dateAndDuration[0], parseInt(dateAndDuration[1]));
         await this.car.showCarList(filteredCars);
         let selectedCar2 = await this.car.selectACar(list);
         console.log("You selected: " + selectedCar2.model);
-        
+        let bookingProperties: string[] = await this.booking.createBookingProperties(selectedCar2, parseInt(dateAndDuration[1]), dateAndDuration[0], this.user);
+        if (bookingProperties[0] == "ok") {
+          this.booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), this.user, selectedCar2);
+          console.log("Car was successfully booked!");
+        } else {
+          console.log("Booking process was stopped. Returning to menu.");
+        }
+        await this.showStartOptions();
         break;
 
       //Statistic
@@ -132,6 +149,14 @@ export class Main {
 
       //Bookings
       case 6:
+        let allBookings: BookingDao[] = await this.booking.getAllBookings();
+        let answer: Answers<string> = await Console.showOptions(["Previous", "Upcoming",], "Show the previous or the upcoming bookings??");
+        if (answer.value == 1) {
+          this.booking.decideWhichBookings(this.user.customer, allBookings, true);
+        } else {
+          this.booking.decideWhichBookings(this.user.customer, allBookings, false);
+        }
+        await this.showStartOptions();
         break;
 
       //Register
