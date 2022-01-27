@@ -4,8 +4,10 @@ import { CarDao } from "../dao/carDao";
 import Console from "./singleton/Console";
 import FileHandler from "./singleton/FileHandler";
 import { User } from "./User";
+import Utility from "./Utility";
 
 export class Booking {
+
     /** Main booking process */
     public async startBookProcess(_car: CarDao, _user: User): Promise<string[]> {
         // Ask for date, time and duration
@@ -146,15 +148,12 @@ export class Booking {
         for (let i = 0; i < _booking.length; i++) {
             let bookingDateNr: number = Date.parse(_booking[i].from + "");
             let reqDateNr: number = Date.parse(_reqDate);
-            // Convert the minutes into milliseconds
-            let reqDurationInMs: number = _reqDuration * 60 * 1000;
-            let bookingDurationInMs: number = _booking[i].duration * 60 * 1000;
-            let reqDateWithDuration: number = reqDateNr + reqDurationInMs;
-            let bookingDateWithDuration: number = bookingDateNr + bookingDurationInMs;
+
+            // Calls convertedInMs
+            let datesWithDuration: number[] = Utility.convertInMs(bookingDateNr, reqDateNr, _reqDuration, _booking[i].duration);
 
             // If request + duration < bookingDate or request > bookingDate + duration -> car is free
-            console.log(reqDateWithDuration + "<" + bookingDateNr + "||" + reqDateNr + ">" + bookingDateWithDuration);
-            if (reqDateWithDuration < bookingDateNr || reqDateNr > bookingDateWithDuration) {
+            if (datesWithDuration[0] < bookingDateNr || reqDateNr > datesWithDuration[1]) {
                 return true;
             }
         }
@@ -162,36 +161,39 @@ export class Booking {
     }
 
     /** Check which cars are free at the given Date date and time and return them */
-    public async getAvailableCars(_cars: CarDao[], _date: string, _duration: number): Promise<CarDao[]> {
+    public async getAvailableCars(_cars: CarDao[], _requestedDate: string, _requestedDuration: number): Promise<CarDao[]> {
         // Get the bookings
-        let booking: BookingDao[] = await this.getAllBookings();
-        // Check if the car is at the given date and time free
+        let allBooking: BookingDao[] = await this.getAllBookings();
         let availableCars: CarDao[] = [];
+        let unavailableCars: string[] = [];
 
-        for (let i = 0; i < booking.length; i++) {
-            let bookingDateNr: number = Date.parse(booking[i].from + "");
-            let reqDateNr: number = Date.parse(_date);
-            // Convert the minutes into milliseconds
-            let reqDurationInMs: number = _duration * 60 * 1000;
-            let bookingDurationInMs: number = booking[i].duration * 60 * 1000;
-            let reqDateWithDuration: number = reqDateNr + reqDurationInMs;
-            let bookingDateWithDuration: number = bookingDateNr + bookingDurationInMs;
+        booking: for (let j = 0; j < allBooking.length; j++) {
+            let bookingDateNr: number = Date.parse(allBooking[j].from + "");
+            let requestedDateNr: number = Date.parse(_requestedDate);
 
-            // check if car is free and save the car in the availableCars array
-            if (reqDateWithDuration < bookingDateNr || reqDateNr > bookingDateWithDuration) {
-                for (let j = 0; j < _cars.length; j++) {
-                    if (_cars[j].id == booking[i].carId) {
-                        availableCars[j] = _cars[j];
-                    }
-                }
+            // Calls convertedInMs
+            let datesWithDuration: number[] = Utility.convertInMs(bookingDateNr, requestedDateNr, _requestedDuration, allBooking[j].duration);
+
+            // Check if cars are booked and add them to unavailableCars
+            if (datesWithDuration[0] < bookingDateNr || requestedDateNr > datesWithDuration[1]) {
+            } else {
+                // Add to unavailable Cars
+                unavailableCars.push(allBooking[j].carId);
+                continue booking;
             }
         }
 
-        // Add also cars, which have never been booked. ??
-        for (let j = 0; j < _cars.length; j++) {
-            if (availableCars[j] == undefined) {
-                availableCars[j] = _cars[j]
+        // Add all cars to availableCars except the cars from unavailableCars
+        let counter: number = 0;
+        skip: for (let j = 0; j < _cars.length; j++) {
+            for (let k = 0; k < unavailableCars.length; k++) {
+                if (_cars[j].id == unavailableCars[k]) {
+                    continue skip;
+                }
             }
+            // If the car is not a car from the unavailableCars array add it to available
+            availableCars[counter] = _cars[j];
+            counter++;
         }
         return availableCars;
     }
@@ -230,7 +232,7 @@ export class Booking {
                     console.log("");
                 }
             }
-            if(amountOfBookings == 0){
+            if (amountOfBookings == 0) {
                 console.log("No bookings were found!");
             }
         }

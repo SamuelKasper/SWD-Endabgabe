@@ -3,16 +3,17 @@ import prompts, { Answers, PromptType } from 'prompts';
 
 class Console {
     /**-----------------------------Singleton  */
-    //declare an instance of newConsole
+    // Declare an instance of Console
     private static instance: Console = new Console();
 
-    //if trying to create another instance of filehandler
+    /** If trying to create another instance of Console */
     private constructor() {
         if (Console.instance)
             throw new Error("Instead of using new Console(), please use Console.getInstance() for Singleton!")
         Console.instance = this;
     }
 
+    /** Returns an instance of the Console class */
     public static getInstance(): Console {
         return Console.instance;
     }

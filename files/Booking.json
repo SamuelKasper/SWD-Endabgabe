@@ -1,1 +1,1 @@
-[{"carId":"4","model":"toyota 3","duration":23,"from":"2020-01-26T12:06:57.272Z","customer":"samu","price":44},{"carId":"2","model":"audi","duration":24,"from":"1999-12-31T14:41:42.294Z","customer":"samu","price":64},{"carId":"3","model":"Mercedes xy","duration":45,"from":"2027-01-26T16:35:09.400Z","customer":"samu","price":79}]
+[{"carId":"2","model":"audi","duration":25,"from":"2022-01-27T16:45:40.673Z","customer":"samu","price":63},{"carId":"4","model":"toyota 3","duration":60,"from":"2022-01-28T12:00:00.503Z","customer":"samu","price":42}]
