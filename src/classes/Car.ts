@@ -76,15 +76,15 @@ export class Car {
 
     /** Prints a list of cars to the console */
     public async showCarList(_list: CarDao[]) {
-        console.log("------- " + _list.length + " result/s -------");
+        Console.printLine("------- " + _list.length + " result/s -------\n");
 
         // If there are less than 10 cars in the list
         if (_list.length < 10) {
             for (let i = 0; i < _list.length; i++) {
                 if (_list[i].type == "1") {
-                    console.log(i + ": " + _list[i].model + " (E)");
+                    Console.printLine(i + ": " + _list[i].model + " (E)\n");
                 } else {
-                    console.log(i + ": " + _list[i].model);
+                    Console.printLine(i + ": " + _list[i].model+"\n");
                 }
             }
 
@@ -92,9 +92,9 @@ export class Car {
         } else {
             for (let i = 0; i < 10; i++) {
                 if (_list[i].type == "1") {
-                    console.log(i + ": " + _list[i].model + " (E)");
+                    Console.printLine(i + ": " + _list[i].model + " (E)\n");
                 } else {
-                    console.log(i + ": " + _list[i].model);
+                    Console.printLine(i + ": " + _list[i].model+"\n");
                 }
             }
             //Show all cars if the user wants to
@@ -102,9 +102,9 @@ export class Car {
             if (answer.value == true) {
                 for (let i = 0; i < _list.length; i++) {
                     if (_list[i].type == "1") {
-                        console.log(i + ": " + _list[i].model + " (E)");
+                        Console.printLine(i + ": " + _list[i].model + " (E)\n");
                     } else {
-                        console.log(i + ": " + _list[i].model);
+                        Console.printLine(i + ": " + _list[i].model+"\n");
                     }
                 }
             }
@@ -116,8 +116,8 @@ export class Car {
         let nr: Answers<string> = await Console.waitForAnswers("Enter the number of the car you want to reserve:", 'number');
         //Check if input is valid
         if (parseInt(nr.value) > _list.length - 1 || parseInt(nr.value) < 0) {
-            console.log("Invalid input!");
-            this.selectACar(_list);
+            Console.printLine("Invalid input!\n");
+            await this.selectACar(_list);
         }
         return _list[nr.value];
     }

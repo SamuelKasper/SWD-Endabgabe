@@ -1,3 +1,4 @@
 - Console.logs für nicht erfüllen hinzufügen
 - console.logs durch Console.print ersetzten
 - Utility functions auslagern
+- Console.printLine geht nicht in cars -> \n am ende

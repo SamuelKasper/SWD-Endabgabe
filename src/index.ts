@@ -131,6 +131,7 @@ export class Main {
     if (await this.user.loginUser()) {
       await this.decideOption();
     } else {
+      // If login fails
       await this.showStartOptions();
     }
   }
@@ -138,7 +139,7 @@ export class Main {
   /** Register a user */
   public async register() {
     await this.user.registerUser();
-    await this.showStartOptions();
+    await this.decideOption();
   }
 
   /** Shows the bookings */
@@ -149,7 +150,7 @@ export class Main {
     } else {
       this.booking.decideWhichBookings(this.user.customer, _allBookings, false);
     }
-    await this.showStartOptions();
+    await this.decideOption();
   }
 
   /** Shows the statistic */
@@ -160,7 +161,7 @@ export class Main {
     } else {
       this.booking.printAccumulatedOrAveragePrice(this.user.customer, _allBookings, false);
     }
-    await this.showStartOptions();
+    await this.decideOption();
   }
 
   /** Filter for cars */
@@ -186,7 +187,7 @@ export class Main {
     } else {
       console.log("Booking process was stopped. Returning to menu.");
     }
-    await this.showStartOptions();
+    await this.decideOption();
   }
 
   /** Show all cars */
@@ -206,7 +207,7 @@ export class Main {
     } else {
       console.log("Booking process was stopped. Returning to menu.");
     }
-    await this.showStartOptions();
+    await this.decideOption();
   }
 
   /** Search a car */

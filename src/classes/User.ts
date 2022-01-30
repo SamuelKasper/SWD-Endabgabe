@@ -22,10 +22,10 @@ export class User {
             if (regexName.test(username.value)) {
                 let userObject: UserDao = { username: username.value, password: password.value };
                 FileHandler.writeJsonFile("./files/User.json", userObject);
-                Console.printLine("\nRegistration successful.\n\n");
+                Console.printLine("Registration successful.\n");
                 return true;
             } else {
-                Console.printLine("\nUsername invalid. No special characters and only 10 characters in total allowed!\n\n");
+                Console.printLine("Username invalid. No special characters and only 10 characters in total allowed!\n");
             }
         }
         return false;
@@ -41,7 +41,7 @@ export class User {
         // Check if user is admin
         if (username.value == "admin" && password.value == "123") {
             this.accountState = "admin";
-            Console.printLine("\nLogged in as admin.\n\n");
+            Console.printLine("Logged in as admin.\n");
             return true;
         }
 
@@ -50,11 +50,11 @@ export class User {
         for (let i: number = 0; i < users.length; i++) {
             if (users[i].username == username.value && users[i].password == password.value) {
                 this.accountState = "loggedIn";
-                Console.printLine("\nLogin successful.\n\n");
+                Console.printLine("Login successful.\n");
                 return true;
             }
         }
-        Console.printLine("\nUsername of password wrong.\n\n");
+        Console.printLine("Username of password wrong.\n");
         return false;
     }
 
@@ -64,7 +64,7 @@ export class User {
         // users would be null if the file couldn't be read
         for (let i: number = 0; i < users.length; i++) {
             if (users[i].username == _username) {
-                Console.printLine("\nThis username is already used.\n\n");
+                Console.printLine("This username is already used.\n");
                 return false;
             }
         }

@@ -22,7 +22,7 @@ export class Booking {
         if (await this.checkCarTimes(new Date(dateAndDuration[0]), dateAndDuration[1], _car)) {
             dateAndTimeValid = true;
         } else {
-            console.log("The car can only be used from " + _car.from + " until " + _car.to + ". Please choose another time.");
+            Console.printLine("The car can only be used from " + _car.from + " until " + _car.to + ". Please choose another time.\n");
             await this.startBookProcess(_car, _user);
         }
 
@@ -30,7 +30,7 @@ export class Booking {
         if (parseInt(dateAndDuration[1]) <= _car.maxDuration) {
             durationValid = true;
         } else {
-            console.log("The maximum usage duration of this car is " + _car.maxDuration + " minutes.\nPlease choose a shorter duration.");
+            Console.printLine("The maximum usage duration of this car is " + _car.maxDuration + " minutes.\nPlease choose a shorter duration.\n");
             await this.startBookProcess(_car, _user);
         }
 
@@ -49,7 +49,7 @@ export class Booking {
             if (await this.checkCarIsFree(booking, dateAndDuration[0], parseInt(dateAndDuration[1]))) {
                 carIsFree = true;
             } else {
-                console.log("The car is already booked at that time. Try another or time.");
+                Console.printLine("The car is already booked at that time. Try another or time.\n");
                 let carOrDate: Answers<string> = await Console.showOptions(["Other date", "Exit",], "Do you want to try another date?");
                 if (carOrDate.value == "1") {
                     await this.startBookProcess(_car, _user);
@@ -76,7 +76,7 @@ export class Booking {
         let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + _car.model + " would be: " + price + "€. Do you want to book this offer?");
         if (confirmBooking.value == "1") {
             if (_user.accountState == "guest") {
-                console.log("Log in to book a car.");
+                Console.printLine("Log in to book a car.\n");
             } else {
                 // Book the car
                 bookingProperties[0] = "ok";
@@ -217,7 +217,7 @@ export class Booking {
     public async decideWhichBookings(_user: string, _booking: BookingDao[], _old: boolean) {
         let amountOfBookings: number = 0;
         if (_user == "") {
-            console.log("Log in to show your bookings");
+            Console.printLine("Log in to show your bookings.\n");
         } else {
             for (let i = 0; i < _booking.length; i++) {
                 if (_user == _booking[i].customer) {
@@ -232,11 +232,11 @@ export class Booking {
                             this.printBookings(_booking[i]);
                         }
                     }
-                    console.log("");
+                    Console.printLine("\n");
                 }
             }
             if (amountOfBookings == 0) {
-                console.log("No bookings were found!");
+                Console.printLine("No bookings were found!\n");
             }
         }
     }
@@ -245,10 +245,10 @@ export class Booking {
     public printBookings(_booking: BookingDao) {
         // Get the converted and formatted string values
         let convertedValues: string[] = this.getConvertedBookingDateAndTime(_booking);
-        console.log("Booked car: " + _booking.model);
-        console.log("Customer: " + _booking.customer);
-        console.log("Date: " + convertedValues[0] + "." + convertedValues[1] + "." + convertedValues[2] + ", " + convertedValues[3] + ":" + convertedValues[4]);
-        console.log("Duration: " + _booking.duration + " minutes");
+        Console.printLine("Booked car: " + _booking.model+"\n");
+        Console.printLine("Customer: " + _booking.customer+"\n");
+        Console.printLine("Date: " + convertedValues[0] + "." + convertedValues[1] + "." + convertedValues[2] + ", " + convertedValues[3] + ":" + convertedValues[4]+"\n");
+        Console.printLine("Duration: " + _booking.duration + " minutes\n");
     }
 
     /** Converts the Date to single numbers and returns them in an array */
@@ -294,7 +294,7 @@ export class Booking {
         let averagePrice: number = 0;
 
         if (_user == "") {
-            console.log("Log in to show your bookings.");
+            Console.printLine("Log in to show your bookings.\n");
         } else {
             for (let i = 0; i < _booking.length; i++) {
                 if (_user == _booking[i].customer) {
@@ -305,9 +305,9 @@ export class Booking {
 
             if (_average) {
                 averagePrice = accumulatedPrice / amountBookings;
-                console.log("The average price of all of your bookings is: " + averagePrice.toFixed(2) + "€");
+                Console.printLine("The average price of all of your bookings is: " + averagePrice.toFixed(2) + "€.\n");
             } else {
-                console.log("The accumulated price of all of your bookings is: " + accumulatedPrice + "€");
+                Console.printLine("The accumulated price of all of your bookings is: " + accumulatedPrice + "€.\n");
             }
         }
     }
