@@ -193,9 +193,12 @@ export class Booking {
 
             // Check if the duration is valid
             if (_requestedDuration <= _cars[j].maxDuration) {
-                // If the car is not a car from the unavailableCars array add it to available
-                availableCars[counter] = _cars[j];
-                counter++;
+                //Check if the requestet time is valid (cars can only be used at specific times)
+                if (await this.checkCarTimes(new Date(_requestedDate), _requestedDuration.toString(), _cars[j])) {
+                    // If the car is not a car from the unavailableCars array add it to available
+                    availableCars[counter] = _cars[j];
+                    counter++;
+                }
             }
         }
         return availableCars;
@@ -245,9 +248,9 @@ export class Booking {
     public printBookings(_booking: BookingDao) {
         // Get the converted and formatted string values
         let convertedValues: string[] = this.getConvertedBookingDateAndTime(_booking);
-        Console.printLine("Booked car: " + _booking.model+"\n");
-        Console.printLine("Customer: " + _booking.customer+"\n");
-        Console.printLine("Date: " + convertedValues[0] + "." + convertedValues[1] + "." + convertedValues[2] + ", " + convertedValues[3] + ":" + convertedValues[4]+"\n");
+        Console.printLine("Booked car: " + _booking.model + "\n");
+        Console.printLine("Customer: " + _booking.customer + "\n");
+        Console.printLine("Date: " + convertedValues[0] + "." + convertedValues[1] + "." + convertedValues[2] + ", " + convertedValues[3] + ":" + convertedValues[4] + "\n");
         Console.printLine("Duration: " + _booking.duration + " minutes\n");
     }
 

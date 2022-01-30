@@ -1,4 +1,2 @@
-- Console.logs für nicht erfüllen hinzufügen
-- console.logs durch Console.print ersetzten
+- frühste und späteste Nutzungsdauer abfragen
 - Utility functions auslagern
-- Console.printLine geht nicht in cars -> \n am ende
