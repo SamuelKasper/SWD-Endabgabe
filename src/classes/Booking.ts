@@ -11,7 +11,7 @@ export class Booking {
     /** Main booking process */
     public async startBookProcess(_car: CarDao, _user: User): Promise<string[]> {
         // Ask for date, time and duration
-        let dateAndDuration: string[] = await this.getDateAndDuration();
+        let dateAndDuration: string[] = await Utility.getDateAndDuration();
         let booking: BookingDao[] = await this.getBookings(_car.model);
         let dateAndTimeValid: boolean = false;
         let durationValid: boolean = false;
@@ -71,7 +71,7 @@ export class Booking {
         bookingProperties[0] = "exit";
 
         // Calculate the Price
-        let price: number = this.calculatePrice(_reqDuration, _car.price, _car.pricePerMin);
+        let price: number = Utility.calculatePrice(_reqDuration, _car.price, _car.pricePerMin);
 
         let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + _car.model + " would be: " + price + "€. Do you want to book this offer?");
         if (confirmBooking.value == "1") {
@@ -100,6 +100,7 @@ export class Booking {
         return selectedBookings;
     }
 
+    /** Returns all bookings from the JSON */
     public async getAllBookings(): Promise<BookingDao[]> {
         let bookings: BookingDao[] = await FileHandler.readJsonFile("./files/Booking.json");
         return bookings;
@@ -112,28 +113,14 @@ export class Booking {
         FileHandler.writeJsonFile("./files/Booking.json", newBooking);
     }
 
-    /** Calculates the price for the car */
-    public calculatePrice(_duration: number, _price: number, _pricePerMinute: number): number {
-        let totalPrice: number = _price + _duration * _pricePerMinute / 100;
-        return totalPrice;
-    }
-
-    /** Converts the given time (8:00 etc.) to minutes */
-    public async convertToMinutes(_time: Date): Promise<number> {
-        let timeString: string = _time + "";
-        let timeSplitted = timeString.split(":");
-        let minutes = parseInt(timeSplitted[0]) * 60 + parseInt(timeSplitted[1]);
-        return minutes;
-    }
-
     /** Check if the requested time is between the valid time */
     public async checkCarTimes(_reqDate: Date, _reqDuration: string, _car: CarDao): Promise<boolean> {
         let reqTime = new Date(_reqDate);
         let reqTimeInMinutes: number = reqTime.getHours() * 60 + reqTime.getMinutes();
         let reqTimeInMinutesWithDuration: number = reqTimeInMinutes + parseInt(_reqDuration);
 
-        let fromInMinutes: number = await this.convertToMinutes(_car.from);
-        let toInMinutes: number = await this.convertToMinutes(_car.to);
+        let fromInMinutes: number = await Utility.convertToMinutes(_car.from);
+        let toInMinutes: number = await Utility.convertToMinutes(_car.to);
 
         if (fromInMinutes < reqTimeInMinutes && reqTimeInMinutesWithDuration < toInMinutes) {
             return true;
@@ -204,19 +191,8 @@ export class Booking {
         return availableCars;
     }
 
-    /** Ask the user to input the Date and duration */
-    public async getDateAndDuration(): Promise<string[]> {
-        let dateAndDuration: string[] = [];
-        // Ask for date, time and duration
-        let reqDate: Answers<string> = await Console.waitForDate("Enter the date and the time you want to use the car:");
-        let reqDuration: Answers<string> = await Console.waitForAnswers("Enter the duration (minutes) you want to use the car", 'text');
-        dateAndDuration[0] = reqDate.value;
-        dateAndDuration[1] = reqDuration.value;
-        return dateAndDuration;
-    }
-
     //------------------------------------------------------------------------------# START: Show previous or upcoming bookings #
-    /** Choose between old or new bookings and call printBookings */
+    /** Choose between previous or upcoming bookings and call printBookings */
     public async decideWhichBookings(_user: string, _booking: BookingDao[], _old: boolean) {
         let amountOfBookings: number = 0;
         if (_user == "") {
@@ -247,71 +223,10 @@ export class Booking {
     /** Prints the past or future bookings */
     public printBookings(_booking: BookingDao) {
         // Get the converted and formatted string values
-        let convertedValues: string[] = this.getConvertedBookingDateAndTime(_booking);
+        let convertedValues: string[] = Utility.getConvertedBookingDateAndTime(_booking);
         Console.printLine("Booked car: " + _booking.model + "\n");
         Console.printLine("Customer: " + _booking.customer + "\n");
         Console.printLine("Date: " + convertedValues[0] + "." + convertedValues[1] + "." + convertedValues[2] + ", " + convertedValues[3] + ":" + convertedValues[4] + "\n");
         Console.printLine("Duration: " + _booking.duration + " minutes\n");
-    }
-
-    /** Converts the Date to single numbers and returns them in an array */
-    public getConvertedBookingDateAndTime(_booking: BookingDao): string[] {
-        // variables
-        let converted: string[] = [];
-        let dayString: string = "", monthString: string = "", yearString: string = "", hoursString: string = "", minutesString: string = "";
-
-        //format day
-        let dayNr: number = new Date(_booking.from).getDate();
-        if (dayNr < 10) { dayString = "0" + dayNr; } else { dayString = dayNr + ""; }
-        converted.push(dayString);
-
-        //format month
-        let monthNr: number = new Date(_booking.from).getMonth();
-        monthNr = monthNr + 1;
-        if (monthNr < 10) { monthString = "0" + monthNr; } else { monthString = monthNr + ""; }
-        converted.push(monthString);
-
-        //format year
-        let yearNr: number = new Date(_booking.from).getFullYear();
-        if (yearNr < 10) { yearString = "0" + yearNr; } else { yearString = yearNr + ""; }
-        converted.push(yearString);
-
-        //format hours
-        let hoursNr: number = new Date(_booking.from).getHours();
-        if (hoursNr < 10) { hoursString = "0" + hoursNr; } else { hoursString = hoursNr + ""; }
-        converted.push(hoursString);
-
-        //format minutes
-        let minutesNr: number = new Date(_booking.from).getMinutes();
-        if (minutesNr < 10) { minutesString = "0" + minutesNr; } else { minutesString = minutesNr + ""; }
-        converted.push(minutesString);
-
-        return converted;
-    }
-
-    //------------------------------------------------------------------------------# START: Show total and average costs #
-    /** Print accumulated prices */
-    public printAccumulatedOrAveragePrice(_user: string, _booking: BookingDao[], _average: boolean) {
-        let accumulatedPrice: number = 0;
-        let amountBookings: number = 0;
-        let averagePrice: number = 0;
-
-        if (_user == "") {
-            Console.printLine("Log in to show your bookings.\n");
-        } else {
-            for (let i = 0; i < _booking.length; i++) {
-                if (_user == _booking[i].customer) {
-                    amountBookings++;
-                    accumulatedPrice = accumulatedPrice + _booking[i].price;
-                }
-            }
-
-            if (_average) {
-                averagePrice = accumulatedPrice / amountBookings;
-                Console.printLine("The average price of all of your bookings is: " + averagePrice.toFixed(2) + "€.\n");
-            } else {
-                Console.printLine("The accumulated price of all of your bookings is: " + accumulatedPrice + "€.\n");
-            }
-        }
     }
 }

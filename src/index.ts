@@ -6,10 +6,10 @@ import { Car } from './classes/Car';
 import { CarDao } from './dao/carDao';
 import { Booking } from './classes/Booking';
 import { BookingDao } from './dao/bookingDao';
+import Utility from './classes/Utility';
 
 export class Main {
   public consoleLine: readline.ReadLine;
-
   // Create a instance of user, car and booking
   public user: User = new User();
   public car: Car = new Car();
@@ -157,9 +157,9 @@ export class Main {
   public async statistics(_allBookings: BookingDao[]) {
     let answer: Answers<string> = await Console.showOptions(["average", "accumulated",], "Show the accumulated or the average price?");
     if (answer.value == 1) {
-      this.booking.printAccumulatedOrAveragePrice(this.user.customer, _allBookings, true);
+      Utility.printAccumulatedOrAveragePrice(this.user.customer, _allBookings, true);
     } else {
-      this.booking.printAccumulatedOrAveragePrice(this.user.customer, _allBookings, false);
+      Utility.printAccumulatedOrAveragePrice(this.user.customer, _allBookings, false);
     }
     await this.decideOption();
   }
@@ -167,7 +167,7 @@ export class Main {
   /** Filter for cars */
   public async filterCars(_list: CarDao[]) {
     // Get required data
-    let dateAndDuration: string[] = await this.booking.getDateAndDuration();
+    let dateAndDuration: string[] = await Utility.getDateAndDuration();
     let filteredCars: CarDao[] = await this.booking.getAvailableCars(_list, dateAndDuration[0], parseInt(dateAndDuration[1]));
 
     // Show a list of cars

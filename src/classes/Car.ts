@@ -1,13 +1,9 @@
 import { Answers } from "prompts";
-import { BookingDao } from "../dao/bookingDao";
 import { CarDao } from "../dao/carDao";
-import { Booking } from "./Booking";
 import Console from "./singleton/Console";
 import FileHandler from "./singleton/FileHandler";
 
 export class Car {
-    public booking: Booking = new Booking();
-
     /** Add a car to the json. Only available for administrators */
     public async addCar(_cars: CarDao[]): Promise<void> {
         // Show highest ID so far
