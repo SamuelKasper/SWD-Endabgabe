@@ -1,4 +1,5 @@
 import { Answers } from "prompts";
+import { BookingDao } from "../dao/bookingDao";
 import { CarDao } from "../dao/carDao";
 import { Booking } from "./Booking";
 import Console from "./singleton/Console";
@@ -8,7 +9,15 @@ export class Car {
     public booking: Booking = new Booking();
 
     /** Add a car to the json. Only available for administrators */
-    public async addCar(): Promise<void> {
+    public async addCar(_cars: CarDao[]): Promise<void> {
+        // Show highest ID so far
+        let idArray: number[] = [];
+        for(let i=0;i<_cars.length;i++){
+            idArray[i] = parseInt(_cars[i].id);
+        }
+        idArray.sort();
+        Console.printLine("The highest used ID is "+ idArray[idArray.length-1]+ ".\n")
+
         // Ask user to input the cars properties
         let id: Answers<string> = await Console.waitForAnswers("Enter the ID:", 'text');
         // Check if the id is free
@@ -28,7 +37,7 @@ export class Car {
             FileHandler.writeJsonFile("./files/Cars.json", newCar);
             Console.printLine("\nAdded car to successfully.\n\n");
         } else {
-            this.addCar();
+            await this.addCar(_cars);
         }
     }
 

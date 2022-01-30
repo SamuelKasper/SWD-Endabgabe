@@ -1,2 +1,2 @@
-- frühste und späteste Nutzungsdauer abfragen
 - Utility functions auslagern
+- car klasse booking instance entfernen und anstelle davon übergeben

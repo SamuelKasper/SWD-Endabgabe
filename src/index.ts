@@ -85,7 +85,7 @@ export class Main {
     switch (_option) {
       //Add a cars
       case 1:
-        this.addACar();
+        this.addACar(list);
         break;
 
       //Search a car
@@ -238,8 +238,8 @@ export class Main {
   }
 
   /** Adds a Car to the car list */
-  public async addACar() {
-    await this.car.addCar();
+  public async addACar(_cars: CarDao[]) {
+    await this.car.addCar(_cars);
     await this.showOptionsIfAdmin();
   }
 
