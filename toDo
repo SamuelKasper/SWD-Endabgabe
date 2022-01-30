@@ -1,5 +1,3 @@
-Preis berechnung überprüfen
-Console.logs für nicht erfüllen hinzufügen
-console.logs durch Console.print ersetzten
-(Häufig wiederholende Texte auslagern)
-Nie gebuchte Autos werden nicht bei der Filterfunktion angezeigt
+- Console.logs für nicht erfüllen hinzufügen
+- console.logs durch Console.print ersetzten
+- Utility functions auslagern

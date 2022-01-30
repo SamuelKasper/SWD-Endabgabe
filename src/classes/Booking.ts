@@ -11,8 +11,7 @@ export class Booking {
     /** Main booking process */
     public async startBookProcess(_car: CarDao, _user: User): Promise<string[]> {
         // Ask for date, time and duration
-        let reqDate: Answers<string> = await Console.waitForDate("Enter the date and the time you want to use the car:");
-        let reqDuration: Answers<string> = await Console.waitForAnswers("Enter the duration (minutes) you want to use the car", 'text');
+        let dateAndDuration: string[] = await this.getDateAndDuration();
         let booking: BookingDao[] = await this.getBookings(_car.model);
         let dateAndTimeValid: boolean = false;
         let durationValid: boolean = false;
@@ -20,7 +19,7 @@ export class Booking {
         let bookingProperties: string[] = [];
 
         //Check if the requestet time is valid (cars can only be used at specific times)
-        if (await this.checkCarTimes(reqDate.value, reqDuration.value, _car)) {
+        if (await this.checkCarTimes(new Date(dateAndDuration[0]), dateAndDuration[1], _car)) {
             dateAndTimeValid = true;
         } else {
             console.log("The car can only be used from " + _car.from + " until " + _car.to + ". Please choose another time.");
@@ -28,7 +27,7 @@ export class Booking {
         }
 
         // Check if the duration is valid (cars can only be used for a specific duration)
-        if (reqDuration.value <= _car.maxDuration) {
+        if (parseInt(dateAndDuration[1]) <= _car.maxDuration) {
             durationValid = true;
         } else {
             console.log("The maximum usage duration of this car is " + _car.maxDuration + " minutes.\nPlease choose a shorter duration.");
@@ -47,8 +46,7 @@ export class Booking {
             carIsFree = true;
         } else {
             // Check if the car is free at the date and time (check id the car is already booked)
-
-            if (await this.checkCarIsFree(booking, reqDate.value, reqDuration.value)) {
+            if (await this.checkCarIsFree(booking, dateAndDuration[0], parseInt(dateAndDuration[1]))) {
                 carIsFree = true;
             } else {
                 console.log("The car is already booked at that time. Try another or time.");
@@ -62,11 +60,12 @@ export class Booking {
         }
 
         if (dateAndTimeValid && durationValid && carIsFree) {
-            bookingProperties = await this.createBookingProperties(_car, reqDuration.value, reqDate.value, _user);
+            bookingProperties = await this.createBookingProperties(_car, parseInt(dateAndDuration[1]), dateAndDuration[0], _user);
         }
         return bookingProperties;
     }
 
+    /** Create an array of properties for the booking and return it */
     public async createBookingProperties(_car: CarDao, _reqDuration: number, _reqDate: string, _user: User): Promise<string[]> {
         let bookingProperties: string[] = [];
         bookingProperties[0] = "exit";
@@ -76,7 +75,7 @@ export class Booking {
 
         let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + _car.model + " would be: " + price + "€. Do you want to book this offer?");
         if (confirmBooking.value == "1") {
-            if (_user.getAccountState() == "guest") {
+            if (_user.accountState == "guest") {
                 console.log("Log in to book a car.");
             } else {
                 // Book the car
@@ -191,9 +190,13 @@ export class Booking {
                     continue skip;
                 }
             }
-            // If the car is not a car from the unavailableCars array add it to available
-            availableCars[counter] = _cars[j];
-            counter++;
+
+            // Check if the duration is valid
+            if (_requestedDuration <= _cars[j].maxDuration) {
+                // If the car is not a car from the unavailableCars array add it to available
+                availableCars[counter] = _cars[j];
+                counter++;
+            }
         }
         return availableCars;
     }

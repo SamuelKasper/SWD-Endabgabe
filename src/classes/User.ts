@@ -70,9 +70,4 @@ export class User {
         }
         return true;
     }
-
-    // Get account state
-    public getAccountState(): string {
-        return this.accountState;
-    }
 }
