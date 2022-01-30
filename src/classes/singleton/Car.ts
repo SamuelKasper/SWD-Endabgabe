@@ -1,18 +1,35 @@
 import { Answers } from "prompts";
-import { CarDao } from "../dao/carDao";
-import Console from "./singleton/Console";
-import FileHandler from "./singleton/FileHandler";
+import { CarDao } from "../../dao/carDao";
+import Console from "./Console";
+import FileHandler from "./FileHandler";
 
 export class Car {
+    //-------------------------------------------------- Singleton
+    // Declare an instance of car
+    private static instance: Car = new Car();
+
+    /** If trying to create another instance of car */
+    private constructor() {
+        if (Car.instance)
+            throw new Error("Instead of using new Car(), please use Car.getInstance() for Singleton!")
+            Car.instance = this;
+    }
+
+    /** Returns an instance of the car class */
+    public static getInstance(): Car {
+        return Car.instance;
+    }
+
+    //-------------------------------------------------- Car
     /** Add a car to the json. Only available for administrators */
     public async addCar(_cars: CarDao[]): Promise<void> {
         // Show highest ID so far
         let idArray: number[] = [];
-        for(let i=0;i<_cars.length;i++){
+        for (let i = 0; i < _cars.length; i++) {
             idArray[i] = parseInt(_cars[i].id);
         }
         idArray.sort();
-        Console.printLine("The highest used ID is "+ idArray[idArray.length-1]+ ".\n")
+        Console.printLine("The highest used ID is " + idArray[idArray.length - 1] + ".\n")
 
         // Ask user to input the cars properties
         let id: Answers<string> = await Console.waitForAnswers("Enter the ID:", 'text');
@@ -89,7 +106,7 @@ export class Car {
                 if (_list[i].type == "1") {
                     Console.printLine(i + ": " + _list[i].model + " (E)\n");
                 } else {
-                    Console.printLine(i + ": " + _list[i].model+"\n");
+                    Console.printLine(i + ": " + _list[i].model + "\n");
                 }
             }
 
@@ -99,7 +116,7 @@ export class Car {
                 if (_list[i].type == "1") {
                     Console.printLine(i + ": " + _list[i].model + " (E)\n");
                 } else {
-                    Console.printLine(i + ": " + _list[i].model+"\n");
+                    Console.printLine(i + ": " + _list[i].model + "\n");
                 }
             }
             //Show all cars if the user wants to
@@ -109,7 +126,7 @@ export class Car {
                     if (_list[i].type == "1") {
                         Console.printLine(i + ": " + _list[i].model + " (E)\n");
                     } else {
-                        Console.printLine(i + ": " + _list[i].model+"\n");
+                        Console.printLine(i + ": " + _list[i].model + "\n");
                     }
                 }
             }
@@ -133,3 +150,5 @@ export class Car {
         return cars;
     }
 }
+// Export the instance of newConsole, so you can use it in other classes
+export default Car.getInstance();

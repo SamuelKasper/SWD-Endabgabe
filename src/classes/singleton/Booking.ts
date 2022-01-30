@@ -1,13 +1,29 @@
 import { Answers } from "prompts";
-import { BookingDao } from "../dao/bookingDao";
-import { CarDao } from "../dao/carDao";
-import Console from "./singleton/Console";
-import FileHandler from "./singleton/FileHandler";
+import { BookingDao } from "../../dao/bookingDao";
+import { CarDao } from "../../dao/carDao";
+import Console from "./Console";
+import FileHandler from "./FileHandler";
 import { User } from "./User";
 import Utility from "./Utility";
 
 export class Booking {
+    //-------------------------------------------------- Singleton
+    // Declare an instance of booking
+    private static instance: Booking = new Booking();
 
+    /** If trying to create another instance of booking */
+    private constructor() {
+        if (Booking.instance)
+            throw new Error("Instead of using new Booking(), please use Booking.getInstance() for Singleton!")
+            Booking.instance = this;
+    }
+
+    /** Returns an instance of the booking class */
+    public static getInstance(): Booking {
+        return Booking.instance;
+    }
+
+//-------------------------------------------------- Booking
     /** Main booking process */
     public async startBookProcess(_car: CarDao, _user: User): Promise<string[]> {
         // Ask for date, time and duration
@@ -230,3 +246,5 @@ export class Booking {
         Console.printLine("Duration: " + _booking.duration + " minutes\n");
     }
 }
+// Export the instance of newConsole, so you can use it in other classes
+export default Booking.getInstance();

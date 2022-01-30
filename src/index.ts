@@ -1,19 +1,15 @@
 import { Answers } from 'prompts';
 import * as readline from 'readline';
 import Console from './classes/singleton/Console';
-import { User } from './classes/User';
-import { Car } from './classes/Car';
+import  User  from './classes/singleton/User';
+import Car from './classes/singleton/Car';
 import { CarDao } from './dao/carDao';
-import { Booking } from './classes/Booking';
+import Booking from './classes/singleton/Booking';
 import { BookingDao } from './dao/bookingDao';
-import Utility from './classes/Utility';
+import Utility from './classes/singleton/Utility';
 
 export class Main {
   public consoleLine: readline.ReadLine;
-  // Create a instance of user, car and booking
-  public user: User = new User();
-  public car: Car = new Car();
-  public booking: Booking = new Booking();
 
   constructor() {
     this.consoleLine = readline.createInterface({
@@ -79,8 +75,8 @@ export class Main {
   //------------------------------------------------------ Select a option area
   /** Handle the selected option */
   public async selectOption(_option: number) {
-    let list: CarDao[] = await this.car.getAllCars();
-    let allBookings: BookingDao[] = await this.booking.getAllBookings();
+    let list: CarDao[] = await Car.getAllCars();
+    let allBookings: BookingDao[] = await Booking.getAllBookings();
 
     switch (_option) {
       //Add a cars
@@ -128,7 +124,7 @@ export class Main {
   //------------------------------------------------------ Handle selection area
   /** Login */
   public async login() {
-    if (await this.user.loginUser()) {
+    if (await User.loginUser()) {
       await this.decideOption();
     } else {
       // If login fails
@@ -138,7 +134,7 @@ export class Main {
 
   /** Register a user */
   public async register() {
-    await this.user.registerUser();
+    await User.registerUser();
     await this.decideOption();
   }
 
@@ -146,9 +142,9 @@ export class Main {
   public async showBookings(_allBookings: BookingDao[]) {
     let answer: Answers<string> = await Console.showOptions(["Previous", "Upcoming",], "Show the previous or the upcoming bookings?");
     if (answer.value == 1) {
-      this.booking.decideWhichBookings(this.user.customer, _allBookings, true);
+      Booking.decideWhichBookings(User.customer, _allBookings, true);
     } else {
-      this.booking.decideWhichBookings(this.user.customer, _allBookings, false);
+      Booking.decideWhichBookings(User.customer, _allBookings, false);
     }
     await this.decideOption();
   }
@@ -157,9 +153,9 @@ export class Main {
   public async statistics(_allBookings: BookingDao[]) {
     let answer: Answers<string> = await Console.showOptions(["average", "accumulated",], "Show the accumulated or the average price?");
     if (answer.value == 1) {
-      Utility.printAccumulatedOrAveragePrice(this.user.customer, _allBookings, true);
+      Utility.printAccumulatedOrAveragePrice(User.customer, _allBookings, true);
     } else {
-      Utility.printAccumulatedOrAveragePrice(this.user.customer, _allBookings, false);
+      Utility.printAccumulatedOrAveragePrice(User.customer, _allBookings, false);
     }
     await this.decideOption();
   }
@@ -168,21 +164,21 @@ export class Main {
   public async filterCars(_list: CarDao[]) {
     // Get required data
     let dateAndDuration: string[] = await Utility.getDateAndDuration();
-    let filteredCars: CarDao[] = await this.booking.getAvailableCars(_list, dateAndDuration[0], parseInt(dateAndDuration[1]));
+    let filteredCars: CarDao[] = await Booking.getAvailableCars(_list, dateAndDuration[0], parseInt(dateAndDuration[1]));
 
     // Show a list of cars
-    await this.car.showCarList(filteredCars);
+    await Car.showCarList(filteredCars);
 
     // Select a car from the list
-    let selectedCar = await this.car.selectACar(filteredCars);
+    let selectedCar = await Car.selectACar(filteredCars);
 
     // Check if car is free and book it if so
     console.log("You selected: " + selectedCar.model);
 
     // If selected car exists call bookACar
-    let bookingProperties: string[] = await this.booking.createBookingProperties(selectedCar, parseInt(dateAndDuration[1]), dateAndDuration[0], this.user);
+    let bookingProperties: string[] = await Booking.createBookingProperties(selectedCar, parseInt(dateAndDuration[1]), dateAndDuration[0], User);
     if (bookingProperties[0] == "ok") {
-      this.booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), this.user, selectedCar);
+      Booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), User, selectedCar);
       console.log("Car was successfully booked!");
     } else {
       console.log("Booking process was stopped. Returning to menu.");
@@ -193,16 +189,16 @@ export class Main {
   /** Show all cars */
   public async showAllCars(_list: CarDao[]) {
     // Show a list of cars
-    await this.car.showCarList(_list);
+    await Car.showCarList(_list);
 
     // Select a car
-    let selectedCar = await this.car.selectACar(_list);
+    let selectedCar = await Car.selectACar(_list);
     console.log("You selected: " + selectedCar.model);
 
     // If selected car exists call bookACar
-    let bookingProperties = await this.booking.startBookProcess(selectedCar, this.user);
+    let bookingProperties = await Booking.startBookProcess(selectedCar, User);
     if (bookingProperties[0] == "ok") {
-      this.booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), this.user, selectedCar);
+      Booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), User, selectedCar);
       console.log("Car was successfully booked!");
     } else {
       console.log("Booking process was stopped. Returning to menu.");
@@ -212,22 +208,21 @@ export class Main {
 
   /** Search a car */
   public async searchACar() {
-    let foundCars = await this.car.searchCar();
+    let foundCars = await Car.searchCar();
     if (foundCars.length == 0) {
       console.log("No cars were found!");
 
     } else {
-      await this.car.showCarList(foundCars);
+      await Car.showCarList(foundCars);
 
-      let selectedCar = await this.car.selectACar(foundCars);
+      let selectedCar = await Car.selectACar(foundCars);
       console.log("You selected: " + selectedCar.model);
 
       // If selected car exists call bookACar
       if (selectedCar != undefined) {
-        //this.booking.setCarAndUser(selectedCar, this.user);
-        let bookingProperties = await this.booking.startBookProcess(selectedCar, this.user);
+        let bookingProperties = await Booking.startBookProcess(selectedCar, User);
         if (bookingProperties[0] == "ok") {
-          this.booking.bookACar(new Date(bookingProperties[0]), parseInt(bookingProperties[1]), parseInt(bookingProperties[2]), this.user, selectedCar);
+          Booking.bookACar(new Date(bookingProperties[0]), parseInt(bookingProperties[1]), parseInt(bookingProperties[2]), User, selectedCar);
           console.log("Car was successfully booked!");
         } else {
           console.log("Booking process was stopped. Returning to menu.");
@@ -239,7 +234,7 @@ export class Main {
 
   /** Adds a Car to the car list */
   public async addACar(_cars: CarDao[]) {
-    await this.car.addCar(_cars);
+    await Car.addCar(_cars);
     await this.showOptionsIfAdmin();
   }
 
@@ -247,11 +242,11 @@ export class Main {
   /** Choose an option based on the accountState */
   public async decideOption() {
     // If user is admin
-    if (this.user.accountState == "admin") {
+    if (User.accountState == "admin") {
       await this.showOptionsIfAdmin();
 
       // If user is normal user
-    } else if (this.user.accountState == "loggedIn") {
+    } else if (User.accountState == "loggedIn") {
       await this.showOptionsIfLoggedIn();
 
       //If user is guest

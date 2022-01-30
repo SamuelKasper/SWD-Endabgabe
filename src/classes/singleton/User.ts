@@ -1,9 +1,26 @@
 import { Answers } from "prompts";
-import { UserDao } from "../dao/userDao";
-import Console from "./singleton/Console";
-import FileHandler from "./singleton/FileHandler";
+import { UserDao } from "../../dao/userDao";
+import Console from "./Console";
+import FileHandler from "./FileHandler";
 
 export class User {
+    //-------------------------------------------------- Singleton
+    // Declare an instance of user
+    private static instance: User = new User();
+
+    /** If trying to create another instance of user */
+    private constructor() {
+        if (User.instance)
+            throw new Error("Instead of using new User(), please use User.getInstance() for Singleton!")
+            User.instance = this;
+    }
+
+    /** Returns an instance of the user class */
+    public static getInstance(): User {
+        return User.instance;
+    }
+
+    //-------------------------------------------------- User
     // Variable which represents the state of the user: guest, loggedIn, admin
     public accountState: string = "guest";
     public customer: string = "";
@@ -71,3 +88,5 @@ export class User {
         return true;
     }
 }
+// Export the instance of newConsole, so you can use it in other classes
+export default User.getInstance();

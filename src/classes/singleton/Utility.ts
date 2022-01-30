@@ -1,6 +1,6 @@
 import { Answers } from "prompts";
-import { BookingDao } from "../dao/bookingDao";
-import Console from "./singleton/Console";
+import { BookingDao } from "../../dao/bookingDao";
+import Console from "./Console";
 
 class Utility {
     //------------------------------------------------------------------------------# START: Singleton #
