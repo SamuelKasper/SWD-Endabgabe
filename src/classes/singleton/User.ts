@@ -1,5 +1,6 @@
 import { Answers } from "prompts";
 import { UserDao } from "../../dao/userDao";
+import checkUsername from "../../helpers/checkUsername";
 import Console from "./Console";
 import FileHandler from "./FileHandler";
 
@@ -33,10 +34,7 @@ export class User {
 
         // check if username can be used
         if (await this.checkUsernameFree(username.value)) {
-            //Check if name only contains letters from a-z and the numbers 0-9
-            let regexName: RegExp = /^[a-zA-Z0-9]{1,10}$/;
-            //If name is valid save name and password in the user file
-            if (regexName.test(username.value)) {
+            if(checkUsername.checkUsernameRegExp(username.value)){
                 let userObject: UserDao = { username: username.value, password: password.value };
                 FileHandler.writeJsonFile("./files/User.json", userObject);
                 Console.printLine("Registration successful.\n");
