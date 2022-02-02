@@ -1,14 +1,14 @@
-export class checkUsername {
-    private static _instance: checkUsername = new checkUsername();
+export class CheckUsername {
+    private static instance: CheckUsername = new CheckUsername();
 
     private constructor() {
-        if (checkUsername._instance)
+        if (CheckUsername.instance)
             throw new Error("Instead of using new checkUsername(), please use checkUsername.getInstance() for Singleton!")
-        checkUsername._instance = this;
+        CheckUsername.instance = this;
     }
 
-    public static getInstance(): checkUsername {
-        return checkUsername._instance;
+    public static getInstance(): CheckUsername {
+        return CheckUsername.instance;
     }
 
     public checkUsernameRegExp(_username: string): boolean {
@@ -20,4 +20,4 @@ export class checkUsername {
 
 }
 
-export default checkUsername.getInstance();
+export default CheckUsername.getInstance();

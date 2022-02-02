@@ -55,7 +55,7 @@ export class Car {
     }
 
     /** Check if the car id is unused*/
-    public async checkIDFree(_id: string): Promise<boolean> {
+    private async checkIDFree(_id: string): Promise<boolean> {
         let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
         for (let i: number = 0; i < cars.length; i++) {
             if (cars[i].id == _id) {
@@ -67,7 +67,7 @@ export class Car {
     }
 
     /** Get a car and return it*/
-    public async getCar(_model: string): Promise<CarDao | undefined> {
+    /* private async getCar(_model: string): Promise<CarDao | undefined> {
         let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
         for (let i: number = 0; i < cars.length; i++) {
             if (cars[i].model == _model) {
@@ -75,7 +75,7 @@ export class Car {
             }
         }
         return undefined;
-    }
+    } */
 
     /** Search for a car and return a list of found cars */
     public async searchCar(): Promise<CarDao[]> {

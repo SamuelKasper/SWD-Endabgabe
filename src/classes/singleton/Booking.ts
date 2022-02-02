@@ -25,7 +25,7 @@ export class Booking {
 
 //-------------------------------------------------- Booking
     /** Main booking process */
-    public async startBookProcess(_car: CarDao, _user: User): Promise<string[]> {
+    public async startBookingProcess(_car: CarDao, _user: User): Promise<string[]> {
         // Ask for date, time and duration
         let dateAndDuration: string[] = await Utility.getDateAndDuration();
         let booking: BookingDao[] = await this.getBookings(_car.model);
@@ -39,7 +39,7 @@ export class Booking {
             dateAndTimeValid = true;
         } else {
             Console.printLine("The car can only be used from " + _car.from + " until " + _car.to + ". Please choose another time.\n");
-            await this.startBookProcess(_car, _user);
+            await this.startBookingProcess(_car, _user);
         }
 
         // Check if the duration is valid (cars can only be used for a specific duration)
@@ -47,7 +47,7 @@ export class Booking {
             durationValid = true;
         } else {
             Console.printLine("The maximum usage duration of this car is " + _car.maxDuration + " minutes.\nPlease choose a shorter duration.\n");
-            await this.startBookProcess(_car, _user);
+            await this.startBookingProcess(_car, _user);
         }
 
         //If the car has not been booked ever
@@ -68,7 +68,7 @@ export class Booking {
                 Console.printLine("The car is already booked at that time. Try another or time.\n");
                 let carOrDate: Answers<string> = await Console.showOptions(["Other date", "Exit",], "Do you want to try another date?");
                 if (carOrDate.value == "1") {
-                    await this.startBookProcess(_car, _user);
+                    await this.startBookingProcess(_car, _user);
                 } else {
                     bookingProperties[0] = "exit";
                 }
@@ -82,12 +82,12 @@ export class Booking {
     }
 
     /** Create an array of properties for the booking and return it */
-    public async createBookingProperties(_car: CarDao, _reqDuration: number, _reqDate: string, _user: User): Promise<string[]> {
+    public async createBookingProperties(_car: CarDao, _requestedDuration: number, _reqestedDate: string, _user: User): Promise<string[]> {
         let bookingProperties: string[] = [];
         bookingProperties[0] = "exit";
 
         // Calculate the Price
-        let price: number = Utility.calculatePrice(_reqDuration, _car.price, _car.pricePerMin);
+        let price: number = Utility.calculatePrice(_requestedDuration, _car.price, _car.pricePerMin);
 
         let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + _car.model + " would be: " + price + "€. Do you want to book this offer?");
         if (confirmBooking.value == "1") {
@@ -96,8 +96,8 @@ export class Booking {
             } else {
                 // Book the car
                 bookingProperties[0] = "ok";
-                bookingProperties[1] = _reqDate;
-                bookingProperties[2] = _reqDuration + "";
+                bookingProperties[1] = _reqestedDate;
+                bookingProperties[2] = _requestedDuration + "";
                 bookingProperties[3] = price + "";
             }
         }
@@ -105,7 +105,7 @@ export class Booking {
     }
 
     /** Returns an array of type BookingDao with the bookings of the given car */
-    public async getBookings(_selectedCar: string): Promise<BookingDao[]> {
+    private async getBookings(_selectedCar: string): Promise<BookingDao[]> {
         let selectedBookings: BookingDao[] = [];
         let bookings: BookingDao[] = await FileHandler.readJsonFile("./files/Booking.json");
         for (let i = 0; i < bookings.length; i++) {
@@ -123,17 +123,17 @@ export class Booking {
     }
 
     /** Saves a car in the cars.json */
-    public async bookACar(_reqDate: Date, _reqDuration: number, _price: number, _user: User, _car: CarDao) {
+    public async bookACar(_requestedDate: Date, _requestedDuration: number, _price: number, _user: User, _car: CarDao) {
         // Book the car
-        let newBooking: BookingDao = { carId: _car.id, model: _car.model, duration: _reqDuration, from: _reqDate, customer: _user.customer, price: _price };
+        let newBooking: BookingDao = { carId: _car.id, model: _car.model, duration: _requestedDuration, from: _requestedDate, customer: _user.customer, price: _price };
         FileHandler.writeJsonFile("./files/Booking.json", newBooking);
     }
 
     /** Check if the requested time is between the valid time */
-    public async checkCarTimes(_reqDate: Date, _reqDuration: string, _car: CarDao): Promise<boolean> {
-        let reqTime = new Date(_reqDate);
+    private async checkCarTimes(_requestedDate: Date, _requestedDuration: string, _car: CarDao): Promise<boolean> {
+        let reqTime = new Date(_requestedDate);
         let reqTimeInMinutes: number = reqTime.getHours() * 60 + reqTime.getMinutes();
-        let reqTimeInMinutesWithDuration: number = reqTimeInMinutes + parseInt(_reqDuration);
+        let reqTimeInMinutesWithDuration: number = reqTimeInMinutes + parseInt(_requestedDuration);
 
         let fromInMinutes: number = await Utility.convertToMinutes(_car.from);
         let toInMinutes: number = await Utility.convertToMinutes(_car.to);
@@ -145,14 +145,14 @@ export class Booking {
     }
 
     /** Check if the car is at the given date and time free*/
-    public async checkCarIsFree(_booking: BookingDao[], _reqDate: string, _reqDuration: number): Promise<boolean> {
+    private async checkCarIsFree(_booking: BookingDao[], _requestedDate: string, _requestedDuration: number): Promise<boolean> {
         // Would be null if there is no booking for this car
         for (let i = 0; i < _booking.length; i++) {
             let bookingDateNr: number = Date.parse(_booking[i].from + "");
-            let reqDateNr: number = Date.parse(_reqDate);
+            let reqDateNr: number = Date.parse(_requestedDate);
 
             // Calls convertedInMs
-            let datesWithDuration: number[] = Utility.convertInMs(bookingDateNr, reqDateNr, _reqDuration, _booking[i].duration);
+            let datesWithDuration: number[] = Utility.convertInMs(bookingDateNr, reqDateNr, _requestedDuration, _booking[i].duration);
 
             // If request + duration < bookingDate or request > bookingDate + duration -> car is free
             if (datesWithDuration[0] < bookingDateNr || reqDateNr > datesWithDuration[1]) {
@@ -219,12 +219,12 @@ export class Booking {
                     if (_old) {
                         if (Date.parse(_booking[i].from + "") < Date.parse(new Date() + "")) {
                             amountOfBookings++;
-                            this.printBookings(_booking[i]);
+                            this.printBooking(_booking[i]);
                         }
                     } else {
                         if (Date.parse(_booking[i].from + "") > Date.parse(new Date() + "")) {
                             amountOfBookings
-                            this.printBookings(_booking[i]);
+                            this.printBooking(_booking[i]);
                         }
                     }
                     Console.printLine("\n");
@@ -237,7 +237,7 @@ export class Booking {
     }
 
     /** Prints the past or future bookings */
-    public printBookings(_booking: BookingDao) {
+    private printBooking(_booking: BookingDao) {
         // Get the converted and formatted string values
         let convertedValues: string[] = Utility.getConvertedBookingDateAndTime(_booking);
         Console.printLine("Booked car: " + _booking.model + "\n");

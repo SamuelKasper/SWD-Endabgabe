@@ -74,7 +74,7 @@ export class User {
     }
 
     //Check username
-    public async checkUsernameFree(_username: string): Promise<boolean> {
+    private async checkUsernameFree(_username: string): Promise<boolean> {
         let users: UserDao[] = await FileHandler.readJsonFile("./files/User.json");
         // users would be null if the file couldn't be read
         for (let i: number = 0; i < users.length; i++) {

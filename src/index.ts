@@ -39,7 +39,7 @@ export class Main {
   }
 
   /** Menu which is shown if logged in as normal user */
-  public async showOptionsIfLoggedIn(): Promise<void> {
+  private async showOptionsIfLoggedIn(): Promise<void> {
     let answer: Answers<string> = await Console.showOptions(
       [
         "Search a car",
@@ -56,7 +56,7 @@ export class Main {
   }
 
   /** Menu which is shown if logged in as admin */
-  public async showOptionsIfAdmin(): Promise<void> {
+  private async showOptionsIfAdmin(): Promise<void> {
     let answer: Answers<string> = await Console.showOptions(
       [
         "Add a car",
@@ -74,7 +74,7 @@ export class Main {
 
   //------------------------------------------------------ Select a option area
   /** Handle the selected option */
-  public async selectOption(_option: number) {
+  private async selectOption(_option: number) {
     let list: CarDao[] = await Car.getAllCars();
     let allBookings: BookingDao[] = await Booking.getAllBookings();
 
@@ -123,7 +123,7 @@ export class Main {
 
   //------------------------------------------------------ Handle selection area
   /** Login */
-  public async login() {
+  private async login() {
     if (await User.loginUser()) {
       await this.decideOption();
     } else {
@@ -133,13 +133,13 @@ export class Main {
   }
 
   /** Register a user */
-  public async register() {
-    await User.registerUser();
+  private async register() {
+    await User.registerUser(); 
     await this.decideOption();
   }
 
   /** Shows the bookings */
-  public async showBookings(_allBookings: BookingDao[]) {
+  private async showBookings(_allBookings: BookingDao[]) {
     let answer: Answers<string> = await Console.showOptions(["Previous", "Upcoming",], "Show the previous or the upcoming bookings?");
     if (answer.value == 1) {
       Booking.decideWhichBookings(User.customer, _allBookings, true);
@@ -150,7 +150,7 @@ export class Main {
   }
 
   /** Shows the statistic */
-  public async statistics(_allBookings: BookingDao[]) {
+  private async statistics(_allBookings: BookingDao[]) {
     let answer: Answers<string> = await Console.showOptions(["average", "accumulated",], "Show the accumulated or the average price?");
     if (answer.value == 1) {
       Utility.printAccumulatedOrAveragePrice(User.customer, _allBookings, true);
@@ -161,7 +161,7 @@ export class Main {
   }
 
   /** Filter for cars */
-  public async filterCars(_list: CarDao[]) {
+  private async filterCars(_list: CarDao[]) {
     // Get required data
     let dateAndDuration: string[] = await Utility.getDateAndDuration();
     let filteredCars: CarDao[] = await Booking.getAvailableCars(_list, dateAndDuration[0], parseInt(dateAndDuration[1]));
@@ -187,7 +187,7 @@ export class Main {
   }
 
   /** Show all cars */
-  public async showAllCars(_list: CarDao[]) {
+  private async showAllCars(_list: CarDao[]) {
     // Show a list of cars
     await Car.showCarList(_list);
 
@@ -196,7 +196,7 @@ export class Main {
     console.log("You selected: " + selectedCar.model);
 
     // If selected car exists call bookACar
-    let bookingProperties = await Booking.startBookProcess(selectedCar, User);
+    let bookingProperties = await Booking.startBookingProcess(selectedCar, User);
     if (bookingProperties[0] == "ok") {
       Booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), User, selectedCar);
       console.log("Car was successfully booked!");
@@ -207,7 +207,7 @@ export class Main {
   }
 
   /** Search a car */
-  public async searchACar() {
+  private async searchACar() {
     let foundCars = await Car.searchCar();
     if (foundCars.length == 0) {
       console.log("No cars were found!");
@@ -220,7 +220,7 @@ export class Main {
 
       // If selected car exists call bookACar
       if (selectedCar != undefined) {
-        let bookingProperties = await Booking.startBookProcess(selectedCar, User);
+        let bookingProperties = await Booking.startBookingProcess(selectedCar, User);
         if (bookingProperties[0] == "ok") {
           Booking.bookACar(new Date(bookingProperties[0]), parseInt(bookingProperties[1]), parseInt(bookingProperties[2]), User, selectedCar);
           console.log("Car was successfully booked!");
@@ -233,14 +233,14 @@ export class Main {
   }
 
   /** Adds a Car to the car list */
-  public async addACar(_cars: CarDao[]) {
+  private async addACar(_cars: CarDao[]) {
     await Car.addCar(_cars);
     await this.showOptionsIfAdmin();
   }
 
   //------------------------------------------------------ Decide menu area
   /** Choose an option based on the accountState */
-  public async decideOption() {
+  private async decideOption() {
     // If user is admin
     if (User.accountState == "admin") {
       await this.showOptionsIfAdmin();
