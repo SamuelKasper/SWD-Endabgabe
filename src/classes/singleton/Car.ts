@@ -150,5 +150,5 @@ export class Car {
         return cars;
     }
 }
-// Export the instance of newConsole, so you can use it in other classes
+// Export the instance of Car, so you can use it in other classes
 export default Car.getInstance();

@@ -86,5 +86,5 @@ export class User {
         return true;
     }
 }
-// Export the instance of newConsole, so you can use it in other classes
+// Export the instance of User, so you can use it in other classes
 export default User.getInstance();

@@ -1,5 +1,4 @@
 import { readFileSync, writeFileSync } from "fs";
-import { dirname, resolve } from "path";
 
 export class FileHandler {
   /**-----------------------------Singleton  */
@@ -37,5 +36,5 @@ export class FileHandler {
   }
 
 }
-
+// Export the instance of FileHandler, so you can use it in other classes
 export default FileHandler.getInstance();

@@ -68,5 +68,5 @@ class Console {
         })
     }
 }
-// Export the instance of newConsole, so you can use it in other classes
+// Export the instance of Console, so you can use it in other classes
 export default Console.getInstance();

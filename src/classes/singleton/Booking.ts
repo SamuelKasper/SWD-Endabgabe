@@ -92,7 +92,7 @@ export class Booking {
         let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + _car.model + " would be: " + price + "€. Do you want to book this offer?");
         if (confirmBooking.value == "1") {
             if (_user.accountState == "guest") {
-                Console.printLine("Log in to book a car.\n");
+                Console.printLine("Login to book a car.\n");
             } else {
                 // Book the car
                 bookingProperties[0] = "ok";
@@ -212,7 +212,7 @@ export class Booking {
     public async decideWhichBookings(_user: string, _booking: BookingDao[], _old: boolean) {
         let amountOfBookings: number = 0;
         if (_user == "") {
-            Console.printLine("Log in to show your bookings.\n");
+            Console.printLine("Login to show your bookings.\n");
         } else {
             for (let i = 0; i < _booking.length; i++) {
                 if (_user == _booking[i].customer) {
@@ -246,5 +246,5 @@ export class Booking {
         Console.printLine("Duration: " + _booking.duration + " minutes\n");
     }
 }
-// Export the instance of newConsole, so you can use it in other classes
+// Export the instance of Booking, so you can use it in other classes
 export default Booking.getInstance();

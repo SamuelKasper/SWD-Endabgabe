@@ -9,15 +9,6 @@ import { BookingDao } from './dao/bookingDao';
 import Utility from './classes/singleton/Utility';
 
 export class Main {
-  public consoleLine: readline.ReadLine;
-
-  constructor() {
-    this.consoleLine = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    })
-  }
-
   //------------------------------------------------------ Show options area
   /** Menu which is shown if not logged in */
   public async showStartOptions(): Promise<void> {
@@ -238,7 +229,7 @@ export class Main {
     await this.showOptionsIfAdmin();
   }
 
-  //------------------------------------------------------ Decide menu area
+  //------------------------------------------------------ Select menu area
   /** Choose an option based on the accountState */
   private async decideOption() {
     // If user is admin

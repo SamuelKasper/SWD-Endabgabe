@@ -95,7 +95,7 @@ class Utility {
         let averagePrice: number = 0;
 
         if (_user == "") {
-            Console.printLine("Log in to show your bookings.\n");
+            Console.printLine("Login to show your bookings.\n");
         } else {
             for (let i = 0; i < _booking.length; i++) {
                 if (_user == _booking[i].customer) {
@@ -104,15 +104,19 @@ class Utility {
                 }
             }
 
-            if (_average) {
-                averagePrice = accumulatedPrice / amountBookings;
-                Console.printLine("The average price of all of your bookings is: " + averagePrice.toFixed(2) + "€.\n");
-            } else {
-                Console.printLine("The accumulated price of all of your bookings is: " + accumulatedPrice + "€.\n");
+            if (amountBookings > 0) {
+                if (_average) {
+                    averagePrice = accumulatedPrice / amountBookings;
+                    Console.printLine("The average price of all of your bookings is: " + averagePrice.toFixed(2) + "€.\n");
+                } else {
+                    Console.printLine("The accumulated price of all of your bookings is: " + accumulatedPrice + "€.\n");
+                }
+            }else{
+                Console.printLine("No bookings were found!\n");
             }
         }
     }
 }
 
-// Export the instance of newConsole, so you can use it in other classes
+// Export the instance of Utility, so you can use it in other classes
 export default Utility.getInstance();
