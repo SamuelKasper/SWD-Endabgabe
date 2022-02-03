@@ -1,7 +1,7 @@
 import { Answers } from 'prompts';
 import * as readline from 'readline';
 import Console from './classes/singleton/Console';
-import  User  from './classes/singleton/User';
+import User from './classes/singleton/User';
 import Car from './classes/singleton/Car';
 import { CarDao } from './dao/carDao';
 import Booking from './classes/singleton/Booking';
@@ -125,7 +125,7 @@ export class Main {
 
   /** Register a user */
   private async register() {
-    await User.registerUser(); 
+    await User.registerUser();
     await this.decideOption();
   }
 
@@ -164,15 +164,15 @@ export class Main {
     let selectedCar = await Car.selectACar(filteredCars);
 
     // Check if car is free and book it if so
-    console.log("You selected: " + selectedCar.model);
+    Console.printLine("You selected: " + selectedCar.model + "\n");
 
     // If selected car exists call bookACar
     let bookingProperties: string[] = await Booking.createBookingProperties(selectedCar, parseInt(dateAndDuration[1]), dateAndDuration[0], User);
     if (bookingProperties[0] == "ok") {
       Booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), User, selectedCar);
-      console.log("Car was successfully booked!");
+      Console.printLine("Car was successfully booked!\n");
     } else {
-      console.log("Booking process was stopped. Returning to menu.");
+      Console.printLine("Booking process was stopped. Returning to menu.\n");
     }
     await this.decideOption();
   }
@@ -184,15 +184,15 @@ export class Main {
 
     // Select a car
     let selectedCar = await Car.selectACar(_list);
-    console.log("You selected: " + selectedCar.model);
+    Console.printLine("You selected: " + selectedCar.model + "\n");
 
     // If selected car exists call bookACar
     let bookingProperties = await Booking.startBookingProcess(selectedCar, User);
     if (bookingProperties[0] == "ok") {
       Booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), User, selectedCar);
-      console.log("Car was successfully booked!");
+      Console.printLine("Car was successfully booked!\n");
     } else {
-      console.log("Booking process was stopped. Returning to menu.");
+      Console.printLine("Booking process was stopped. Returning to menu.\n");
     }
     await this.decideOption();
   }
@@ -201,23 +201,20 @@ export class Main {
   private async searchACar() {
     let foundCars = await Car.searchCar();
     if (foundCars.length == 0) {
-      console.log("No cars were found!");
+      Console.printLine("No cars were found!\n");
 
     } else {
       await Car.showCarList(foundCars);
 
       let selectedCar = await Car.selectACar(foundCars);
-      console.log("You selected: " + selectedCar.model);
-
-      // If selected car exists call bookACar
-      if (selectedCar != undefined) {
-        let bookingProperties = await Booking.startBookingProcess(selectedCar, User);
-        if (bookingProperties[0] == "ok") {
-          Booking.bookACar(new Date(bookingProperties[0]), parseInt(bookingProperties[1]), parseInt(bookingProperties[2]), User, selectedCar);
-          console.log("Car was successfully booked!");
-        } else {
-          console.log("Booking process was stopped. Returning to menu.");
-        }
+      Console.printLine("You selected: " + selectedCar.model + "\n");
+      let bookingProperties = await Booking.startBookingProcess(selectedCar, User);
+      console.log(bookingProperties);
+      if (bookingProperties[0] == "ok") {
+        Booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), User, selectedCar);
+        Console.printLine("Car was successfully booked!\n");
+      } else {
+        Console.printLine("Booking process was stopped. Returning to menu.\n");
       }
     }
     await this.decideOption();
