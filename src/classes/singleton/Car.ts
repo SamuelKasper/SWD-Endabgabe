@@ -12,7 +12,7 @@ export class Car {
     private constructor() {
         if (Car.instance)
             throw new Error("Instead of using new Car(), please use Car.getInstance() for Singleton!")
-            Car.instance = this;
+        Car.instance = this;
     }
 
     /** Returns an instance of the car class */
@@ -23,48 +23,28 @@ export class Car {
     //-------------------------------------------------- Car section
     /** Add a car to the json. Only available for administrators */
     public async addCar(_cars: CarDao[]): Promise<void> {
-        // Show highest ID so far
+        // Get highest ID
         let idArray: number[] = [];
         for (let i = 0; i < _cars.length; i++) {
             idArray[i] = parseInt(_cars[i].id);
         }
         // Sorts the id's in ascending order
-        idArray = idArray.sort(function(a,b){return a-b});
-        Console.printLine("The highest used ID is " + idArray[idArray.length-1] + ".\n")
+        idArray = idArray.sort(function (a, b) { return a - b });
+        let id: string = idArray[idArray.length - 1] + 1 + "";
+        let model: Answers<string> = await Console.waitForAnswers("Enter the model:", 'text');
+        let type: Answers<string> = await Console.showOptions(["Electric", "Conventional",], "Choose a type:");
+        let from: Answers<string> = await Console.waitForAnswers("Enter the earliest time:", 'text');
+        let to: Answers<string> = await Console.waitForAnswers("Enter the latest time:", 'text');
+        let maxDuration: Answers<string> = await Console.waitForAnswers("Enter the maximum duration in minutes", 'number');
+        let price: Answers<string> = await Console.waitForAnswers("Enter the flat price:", 'number');
+        let pricePerMin: Answers<string> = await Console.waitForAnswers("Enter the additional price per minute in cent:", 'number');
 
-        // Ask user to input the cars properties
-        let id: Answers<string> = await Console.waitForAnswers("Enter the ID:", 'text');
-        // Check if the id is free
-        if (await this.checkIDFree(id.value)) {
-            let model: Answers<string> = await Console.waitForAnswers("Enter the model:", 'text');
-            let type: Answers<string> = await Console.showOptions(["Electric", "Conventional",], "Choose a type:");
-            let from: Answers<string> = await Console.waitForAnswers("Enter the earliest time:", 'text');
-            let to: Answers<string> = await Console.waitForAnswers("Enter the latest time:", 'text');
-            let maxDuration: Answers<string> = await Console.waitForAnswers("Enter the maximum duration in minutes", 'number');
-            let price: Answers<string> = await Console.waitForAnswers("Enter the flat price:", 'number');
-            let pricePerMin: Answers<string> = await Console.waitForAnswers("Enter the additional price per minute in cent:", 'number');
+        // Create an object for the car
+        let newCar: CarDao = { id: id, model: model.value, type: type.value, from: from.value, to: to.value, maxDuration: maxDuration.value, price: price.value, pricePerMin: pricePerMin.value };
 
-            // Create an object for the car
-            let newCar: CarDao = { id: id.value, model: model.value, type: type.value, from: from.value, to: to.value, maxDuration: maxDuration.value, price: price.value, pricePerMin: pricePerMin.value };
-
-            // Add the car to the JSON file
-            FileHandler.writeJsonFile("./files/Cars.json", newCar);
-            Console.printLine("\nAdded car to successfully.\n\n");
-        } else {
-            await this.addCar(_cars);
-        }
-    }
-
-    /** Check if the car id is unused*/
-    private async checkIDFree(_id: string): Promise<boolean> {
-        let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
-        for (let i: number = 0; i < cars.length; i++) {
-            if (cars[i].id == _id) {
-                Console.printLine("\nThis ID is already used.\n\n");
-                return false;
-            }
-        }
-        return true;
+        // Add the car to the JSON file
+        FileHandler.writeJsonFile("./files/Cars.json", newCar);
+        Console.printLine("\nAdded car to successfully.\n\n");
     }
 
     /** Search for a car and return a list of found cars */
