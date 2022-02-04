@@ -2,7 +2,7 @@ import readline from 'readline';
 import prompts, { Answers, PromptType } from 'prompts';
 
 class Console {
-    /**-----------------------------Singleton  */
+    //-------------------------------------------------- Singleton section
     // Declare an instance of Console
     private static instance: Console = new Console();
 
@@ -18,17 +18,18 @@ class Console {
         return Console.instance;
     }
 
-    /**-------------------------------Terminal Output */
+    //-------------------------------------------------- Terminal output section
     public consoleLine: readline.ReadLine = readline.createInterface({
         input: process.stdin,
         output: process.stdout
     })
 
+    /** Print the given String in the console */
     public printLine(line: string): void {
         this.consoleLine.write(line);
     }
 
-    /**-----------------------------Terminal */
+    //-------------------------------------------------- Terminal section
     // Function for showing the given parameters in Terminal
     public showOptions(_option: string[], _question: string): Promise<Answers<string>> {
         let choices: any[] = []
@@ -57,6 +58,7 @@ class Console {
         })
     }
 
+    // Function for setting dates
     public waitForDate(_question: string): Promise<Answers<string>> {
         return prompts({
             type: 'date',

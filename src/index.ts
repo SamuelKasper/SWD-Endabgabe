@@ -1,5 +1,4 @@
 import { Answers } from 'prompts';
-import * as readline from 'readline';
 import Console from './classes/singleton/Console';
 import User from './classes/singleton/User';
 import Car from './classes/singleton/Car';
@@ -11,7 +10,7 @@ import Utility from './classes/singleton/Utility';
 export class Main {
   //------------------------------------------------------ Show options area
   /** Menu which is shown if not logged in */
-  public async showStartOptions(): Promise<void> {
+  public async showGuestOptions(): Promise<void> {
     let answer: Answers<string> = await Console.showOptions(
       [
         "Search a car",
@@ -30,7 +29,7 @@ export class Main {
   }
 
   /** Menu which is shown if logged in as normal user */
-  private async showOptionsIfLoggedIn(): Promise<void> {
+  private async showUserOptions(): Promise<void> {
     let answer: Answers<string> = await Console.showOptions(
       [
         "Search a car",
@@ -47,7 +46,7 @@ export class Main {
   }
 
   /** Menu which is shown if logged in as admin */
-  private async showOptionsIfAdmin(): Promise<void> {
+  private async showAdminOptions(): Promise<void> {
     let answer: Answers<string> = await Console.showOptions(
       [
         "Add a car",
@@ -119,7 +118,7 @@ export class Main {
       await this.decideOption();
     } else {
       // If login fails
-      await this.showStartOptions();
+      await this.showGuestOptions();
     }
   }
 
@@ -133,9 +132,9 @@ export class Main {
   private async showBookings(_allBookings: BookingDao[]) {
     let answer: Answers<string> = await Console.showOptions(["Previous", "Upcoming",], "Show the previous or the upcoming bookings?");
     if (answer.value == 1) {
-      Booking.decideWhichBookings(User.customer, _allBookings, true);
+      Booking.getBookingsToPrint(User.username, _allBookings, true);
     } else {
-      Booking.decideWhichBookings(User.customer, _allBookings, false);
+      Booking.getBookingsToPrint(User.username, _allBookings, false);
     }
     await this.decideOption();
   }
@@ -144,9 +143,9 @@ export class Main {
   private async statistics(_allBookings: BookingDao[]) {
     let answer: Answers<string> = await Console.showOptions(["average", "accumulated",], "Show the accumulated or the average price?");
     if (answer.value == 1) {
-      Utility.printAccumulatedOrAveragePrice(User.customer, _allBookings, true);
+      Utility.printAccumulatedOrAveragePrice(User.username, _allBookings, true);
     } else {
-      Utility.printAccumulatedOrAveragePrice(User.customer, _allBookings, false);
+      Utility.printAccumulatedOrAveragePrice(User.username, _allBookings, false);
     }
     await this.decideOption();
   }
@@ -209,7 +208,6 @@ export class Main {
       let selectedCar = await Car.selectACar(foundCars);
       Console.printLine("You selected: " + selectedCar.model + "\n");
       let bookingProperties = await Booking.startBookingProcess(selectedCar, User);
-      console.log(bookingProperties);
       if (bookingProperties[0] == "ok") {
         Booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), User, selectedCar);
         Console.printLine("Car was successfully booked!\n");
@@ -223,7 +221,7 @@ export class Main {
   /** Adds a Car to the car list */
   private async addACar(_cars: CarDao[]) {
     await Car.addCar(_cars);
-    await this.showOptionsIfAdmin();
+    await this.showAdminOptions();
   }
 
   //------------------------------------------------------ Select menu area
@@ -231,18 +229,18 @@ export class Main {
   private async decideOption() {
     // If user is admin
     if (User.accountState == "admin") {
-      await this.showOptionsIfAdmin();
+      await this.showAdminOptions();
 
       // If user is normal user
     } else if (User.accountState == "loggedIn") {
-      await this.showOptionsIfLoggedIn();
+      await this.showUserOptions();
 
       //If user is guest
     } else {
-      await this.showStartOptions();
+      await this.showGuestOptions();
     }
   }
 }
 
 let main: Main = new Main();
-main.showStartOptions();
+main.showGuestOptions();

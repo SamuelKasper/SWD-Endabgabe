@@ -5,7 +5,7 @@ import Console from "./Console";
 import FileHandler from "./FileHandler";
 
 export class User {
-    //-------------------------------------------------- Singleton
+    //-------------------------------------------------- Singleton section
     // Declare an instance of user
     private static instance: User = new User();
 
@@ -21,12 +21,12 @@ export class User {
         return User.instance;
     }
 
-    //-------------------------------------------------- User
+    //-------------------------------------------------- User section
     // Variable which represents the state of the user: guest, loggedIn, admin
     public accountState: string = "guest";
-    public customer: string = "";
+    public username: string = "";
 
-    //Register
+    /** Register a user and write the user to JSON */
     public async registerUser(): Promise<boolean> {
         // Ask user to input username and password
         let username: Answers<string> = await Console.waitForAnswers("Enter username:", 'text');
@@ -46,15 +46,15 @@ export class User {
         return false;
     }
 
-    //Login
+    /** Login */
     public async loginUser(): Promise<boolean> {
         // Ask user to input username and password
         let username: Answers<string> = await Console.waitForAnswers("Enter username:", 'text');
-        this.customer = username.value;
+        this.username = username.value;
         let password: Answers<string> = await Console.waitForAnswers("Enter password", 'password');
 
         // Check if user is admin
-        if (username.value == "admin" && password.value == "123") {
+        if (username.value == "admin" && password.value == "admin") {
             this.accountState = "admin";
             Console.printLine("Logged in as admin.\n");
             return true;
@@ -73,10 +73,9 @@ export class User {
         return false;
     }
 
-    //Check username
+    /** Check username */
     private async checkUsernameFree(_username: string): Promise<boolean> {
         let users: UserDao[] = await FileHandler.readJsonFile("./files/User.json");
-        // users would be null if the file couldn't be read
         for (let i: number = 0; i < users.length; i++) {
             if (users[i].username == _username) {
                 Console.printLine("This username is already used.\n");

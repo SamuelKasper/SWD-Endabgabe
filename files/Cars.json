@@ -1,1 +1,112 @@
-[{"id":"1","model":"vw abc","type":1,"from":"8:00","to":"20:00","maxDuration":180,"price":50,"pricePerMin":55},{"id":"2","model":"audi","type":2,"from":"7:00","to":"22:00","maxDuration":300,"price":60,"pricePerMin":20},{"id":"3","model":"Mercedes xy","type":2,"from":"8:00","to":"22:00","maxDuration":180,"price":70,"pricePerMin":20},{"id":"0","model":"tesla rx580","type":1,"from":"6:00","to":"21:00","maxDuration":360,"price":55,"pricePerMin":15},{"id":"4","model":"toyota 3","type":2,"from":"7:00","to":"21:00","maxDuration":300,"price":40,"pricePerMin":20},{"id":"5","model":"Opel","type":1,"from":"6:00","to":"20:00","maxDuration":300,"price":35,"pricePerMin":15}]
+[
+    {
+        "id": "1",
+        "model": "VW Polo - Dunkel Blau",
+        "type": 1,
+        "from": "8:00",
+        "to": "20:00",
+        "maxDuration": 180,
+        "price": 50,
+        "pricePerMin": 55
+    },
+    {
+        "id": "2",
+        "model": "Audi 2 - Weiss",
+        "type": 2,
+        "from": "7:00",
+        "to": "22:00",
+        "maxDuration": 300,
+        "price": 60,
+        "pricePerMin": 20
+    },
+    {
+        "id": "3",
+        "model": "Mercedes A 220 - Rot",
+        "type": 2,
+        "from": "8:00",
+        "to": "22:00",
+        "maxDuration": 180,
+        "price": 70,
+        "pricePerMin": 20
+    },
+    {
+        "id": "0",
+        "model": "Tesla RX580",
+        "type": 1,
+        "from": "6:00",
+        "to": "21:00",
+        "maxDuration": 360,
+        "price": 55,
+        "pricePerMin": 15
+    },
+    {
+        "id": "4",
+        "model": "Toyota 3",
+        "type": 2,
+        "from": "7:00",
+        "to": "21:00",
+        "maxDuration": 300,
+        "price": 40,
+        "pricePerMin": 20
+    },
+    {
+        "id": "5",
+        "model": "Opel",
+        "type": 1,
+        "from": "6:00",
+        "to": "20:00",
+        "maxDuration": 300,
+        "price": 35,
+        "pricePerMin": 15
+    },
+    {
+        "id": "6",
+        "model": "Subaru X",
+        "type": 2,
+        "from": "6:00",
+        "to": "22:00",
+        "maxDuration": 150,
+        "price": 45,
+        "pricePerMin": 15
+    },
+    {
+        "id": "7",
+        "model": "Tesla 2",
+        "type": 1,
+        "from": "7:00",
+        "to": "22:00",
+        "maxDuration": 300,
+        "price": 60,
+        "pricePerMin": 25
+    },
+    {
+        "id": "8",
+        "model": "Mercedes A 180 - Grau",
+        "type": 2,
+        "from": "7:00",
+        "to": "22:00",
+        "maxDuration": 400,
+        "price": 65,
+        "pricePerMin": 15
+    },
+    {
+        "id": "9",
+        "model": "Opel Astra - Schwarz",
+        "type": 2,
+        "from": "7:00",
+        "to": "22:00",
+        "maxDuration": 300,
+        "price": 35,
+        "pricePerMin": 25
+    },
+    {
+        "id": "10",
+        "model": "Mercedes A 180 - Schwarz",
+        "type": 2,
+        "from": "5:00",
+        "to": "20:00",
+        "maxDuration": 200,
+        "price": 65,
+        "pricePerMin": 17
+    }
+]

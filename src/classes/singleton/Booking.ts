@@ -28,7 +28,7 @@ export class Booking {
     public async startBookingProcess(_car: CarDao, _user: User): Promise<string[]> {
         // Ask for date, time and duration
         let dateAndDuration: string[] = await Utility.getDateAndDuration();
-        let booking: BookingDao[] = await this.getBookings(_car.model);
+        let booking: BookingDao[] = await this.getACarsBookings(_car.model);
         let dateAndTimeValid: boolean = false;
         let durationValid: boolean = false;
         let carIsFree: boolean = false;
@@ -105,7 +105,7 @@ export class Booking {
     }
 
     /** Returns an array of type BookingDao with the bookings of the given car */
-    private async getBookings(_selectedCar: string): Promise<BookingDao[]> {
+    private async getACarsBookings(_selectedCar: string): Promise<BookingDao[]> {
         let selectedBookings: BookingDao[] = [];
         let bookings: BookingDao[] = await FileHandler.readJsonFile("./files/Booking.json");
         for (let i = 0; i < bookings.length; i++) {
@@ -125,7 +125,7 @@ export class Booking {
     /** Saves a car in the cars.json */
     public async bookACar(_requestedDate: Date, _requestedDuration: number, _price: number, _user: User, _car: CarDao) {
         // Book the car
-        let newBooking: BookingDao = { carId: _car.id, model: _car.model, duration: _requestedDuration, from: _requestedDate, customer: _user.customer, price: _price };
+        let newBooking: BookingDao = { carId: _car.id, model: _car.model, duration: _requestedDuration, from: _requestedDate, customer: _user.username, price: _price };
         FileHandler.writeJsonFile("./files/Booking.json", newBooking);
     }
 
@@ -209,7 +209,7 @@ export class Booking {
 
     //------------------------------------------------------------------------------# START: Show previous or upcoming bookings #
     /** Choose between previous or upcoming bookings and call printBookings */
-    public async decideWhichBookings(_user: string, _booking: BookingDao[], _old: boolean) {
+    public async getBookingsToPrint(_user: string, _booking: BookingDao[], _old: boolean) {
         let amountOfBookings: number = 0;
         if (_user == "") {
             Console.printLine("Login to show your bookings.\n");
@@ -219,12 +219,12 @@ export class Booking {
                     if (_old) {
                         if (Date.parse(_booking[i].from + "") < Date.parse(new Date() + "")) {
                             amountOfBookings++;
-                            this.printBooking(_booking[i]);
+                            this.printBookings(_booking[i]);
                         }
                     } else {
                         if (Date.parse(_booking[i].from + "") > Date.parse(new Date() + "")) {
                             amountOfBookings
-                            this.printBooking(_booking[i]);
+                            this.printBookings(_booking[i]);
                         }
                     }
                     Console.printLine("\n");
@@ -236,8 +236,8 @@ export class Booking {
         }
     }
 
-    /** Prints the past or future bookings */
-    private printBooking(_booking: BookingDao) {
+    /** Prints the previous or upcomaing bookings */
+    private printBookings(_booking: BookingDao) {
         // Get the converted and formatted string values
         let convertedValues: string[] = Utility.getConvertedBookingDateAndTime(_booking);
         Console.printLine("Booked car: " + _booking.model + "\n");

@@ -4,7 +4,7 @@ import Console from "./Console";
 import FileHandler from "./FileHandler";
 
 export class Car {
-    //-------------------------------------------------- Singleton
+    //-------------------------------------------------- Singleton section
     // Declare an instance of car
     private static instance: Car = new Car();
 
@@ -20,7 +20,7 @@ export class Car {
         return Car.instance;
     }
 
-    //-------------------------------------------------- Car
+    //-------------------------------------------------- Car section
     /** Add a car to the json. Only available for administrators */
     public async addCar(_cars: CarDao[]): Promise<void> {
         // Show highest ID so far
@@ -28,8 +28,9 @@ export class Car {
         for (let i = 0; i < _cars.length; i++) {
             idArray[i] = parseInt(_cars[i].id);
         }
-        idArray.sort();
-        Console.printLine("The highest used ID is " + idArray[idArray.length - 1] + ".\n")
+        // Sorts the id's in ascending order
+        idArray = idArray.sort(function(a,b){return a-b});
+        Console.printLine("The highest used ID is " + idArray[idArray.length-1] + ".\n")
 
         // Ask user to input the cars properties
         let id: Answers<string> = await Console.waitForAnswers("Enter the ID:", 'text');
@@ -65,17 +66,6 @@ export class Car {
         }
         return true;
     }
-
-    /** Get a car and return it*/
-    /* private async getCar(_model: string): Promise<CarDao | undefined> {
-        let cars: CarDao[] = await FileHandler.readJsonFile("./files/Cars.json");
-        for (let i: number = 0; i < cars.length; i++) {
-            if (cars[i].model == _model) {
-                return cars[i];
-            }
-        }
-        return undefined;
-    } */
 
     /** Search for a car and return a list of found cars */
     public async searchCar(): Promise<CarDao[]> {
@@ -122,6 +112,7 @@ export class Car {
             //Show all cars if the user wants to
             let answer: Answers<string> = await Console.waitForAnswers("Do you want to see all cars?", 'toggle');
             if (answer.value == true) {
+                Console.printLine("------- " + _list.length + " result/s -------\n");
                 for (let i = 0; i < _list.length; i++) {
                     if (_list[i].type == "1") {
                         Console.printLine(i + ": " + _list[i].model + " (E)\n");
