@@ -168,7 +168,7 @@ export class Main {
     // If selected car exists call bookACar
     let bookingProperties: string[] = await Booking.createBookingProperties(selectedCar, parseInt(dateAndDuration[1]), dateAndDuration[0], User);
     if (bookingProperties[0] == "ok") {
-      Booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), User, selectedCar);
+      Booking.bookACar(parseInt(bookingProperties[1]), new Date(bookingProperties[2]), parseInt(bookingProperties[3]), parseInt(bookingProperties[4]), User, selectedCar);
       Console.printLine("Car was successfully booked!\n");
     } else {
       Console.printLine("Booking process was stopped. Returning to menu.\n");
@@ -188,7 +188,7 @@ export class Main {
     // If selected car exists call bookACar
     let bookingProperties = await Booking.startBookingProcess(selectedCar, User);
     if (bookingProperties[0] == "ok") {
-      Booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), User, selectedCar);
+      Booking.bookACar(parseInt(bookingProperties[1]), new Date(bookingProperties[2]), parseInt(bookingProperties[3]), parseInt(bookingProperties[4]), User, selectedCar);
       Console.printLine("Car was successfully booked!\n");
     } else {
       Console.printLine("Booking process was stopped. Returning to menu.\n");
@@ -209,7 +209,7 @@ export class Main {
       Console.printLine("You selected: " + selectedCar.model + "\n");
       let bookingProperties = await Booking.startBookingProcess(selectedCar, User);
       if (bookingProperties[0] == "ok") {
-        Booking.bookACar(new Date(bookingProperties[1]), parseInt(bookingProperties[2]), parseInt(bookingProperties[3]), User, selectedCar);
+        Booking.bookACar(parseInt(bookingProperties[1]), new Date(bookingProperties[2]), parseInt(bookingProperties[3]), parseInt(bookingProperties[4]), User, selectedCar);
         Console.printLine("Car was successfully booked!\n");
       } else {
         Console.printLine("Booking process was stopped. Returning to menu.\n");

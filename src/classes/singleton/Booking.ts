@@ -15,7 +15,7 @@ export class Booking {
     private constructor() {
         if (Booking.instance)
             throw new Error("Instead of using new Booking(), please use Booking.getInstance() for Singleton!")
-            Booking.instance = this;
+        Booking.instance = this;
     }
 
     /** Returns an instance of the booking class */
@@ -23,7 +23,7 @@ export class Booking {
         return Booking.instance;
     }
 
-//-------------------------------------------------- Booking
+    //-------------------------------------------------- Booking
     /** Main booking process */
     public async startBookingProcess(_car: CarDao, _user: User): Promise<string[]> {
         // Ask for date, time and duration
@@ -89,6 +89,19 @@ export class Booking {
         // Calculate the Price
         let price: number = Utility.calculatePrice(_requestedDuration, _car.price, _car.pricePerMin);
 
+        // Generate the next ID. If there is no booking, set the first id = 0
+        let bookings: BookingDao[] = await this.getAllBookings();
+        let idArray: number[] = [];
+        let id: number;
+        if (bookings.length > 0) {
+            for (let i = 0; i < bookings.length; i++) {
+                idArray[i] = bookings[i].id;
+            }
+            id = Utility.generateNextID(idArray);
+        } else {
+            id = 0;
+        }
+
         let confirmBooking: Answers<string> = await Console.showOptions(["Yes", "No",], "The price for the " + _car.model + " would be: " + price + "€. Do you want to book this offer?");
         if (confirmBooking.value == "1") {
             if (_user.accountState == "guest") {
@@ -96,9 +109,10 @@ export class Booking {
             } else {
                 // Book the car
                 bookingProperties[0] = "ok";
-                bookingProperties[1] = _reqestedDate;
-                bookingProperties[2] = _requestedDuration + "";
-                bookingProperties[3] = price + "";
+                bookingProperties[1] = id+"";
+                bookingProperties[2] = _reqestedDate;
+                bookingProperties[3] = _requestedDuration + "";
+                bookingProperties[4] = price + "";
             }
         }
         return bookingProperties;
@@ -123,9 +137,9 @@ export class Booking {
     }
 
     /** Saves a car in the cars.json */
-    public async bookACar(_requestedDate: Date, _requestedDuration: number, _price: number, _user: User, _car: CarDao) {
+    public async bookACar(_id: number, _requestedDate: Date, _requestedDuration: number, _price: number, _user: User, _car: CarDao) {
         // Book the car
-        let newBooking: BookingDao = { carId: _car.id, model: _car.model, duration: _requestedDuration, from: _requestedDate, customer: _user.username, price: _price };
+        let newBooking: BookingDao = { id: _id, carId: _car.id, model: _car.model, duration: _requestedDuration, from: _requestedDate, customer: _user.username, price: _price };
         FileHandler.writeJsonFile("./files/Booking.json", newBooking);
     }
 

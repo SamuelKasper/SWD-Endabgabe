@@ -1,1 +1,11 @@
-[{"carId":"0","model":"Tesla RX580","duration":100,"from":"2022-02-04T12:00:00.906Z","customer":"samu","price":70}]
+[
+    {
+        "id": 0,
+        "carId": "1",
+        "model": "VW Polo - Dunkel Blau",
+        "duration": 100,
+        "from": "2023-02-05T11:43:56.586Z",
+        "customer": "samu",
+        "price": 105
+    }
+]

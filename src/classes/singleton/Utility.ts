@@ -116,6 +116,14 @@ class Utility {
             }
         }
     }
+
+    /** Returns the next number for the id */
+    public generateNextID(idArray: number[]): number{
+         // Sorts the id's in ascending order
+         idArray = idArray.sort(function (a, b) { return a - b });
+         let id: number = idArray[idArray.length - 1] + 1;
+        return id;
+    }
 }
 
 // Export the instance of Utility, so you can use it in other classes

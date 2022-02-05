@@ -2,6 +2,7 @@ import { Answers } from "prompts";
 import { CarDao } from "../../dao/carDao";
 import Console from "./Console";
 import FileHandler from "./FileHandler";
+import Utility from "./Utility";
 
 export class Car {
     //-------------------------------------------------- Singleton section
@@ -23,14 +24,11 @@ export class Car {
     //-------------------------------------------------- Car section
     /** Add a car to the json. Only available for administrators */
     public async addCar(_cars: CarDao[]): Promise<void> {
-        // Get highest ID
         let idArray: number[] = [];
         for (let i = 0; i < _cars.length; i++) {
             idArray[i] = parseInt(_cars[i].id);
         }
-        // Sorts the id's in ascending order
-        idArray = idArray.sort(function (a, b) { return a - b });
-        let id: string = idArray[idArray.length - 1] + 1 + "";
+        let id: string = Utility.generateNextID(idArray) +"";
         let model: Answers<string> = await Console.waitForAnswers("Enter the model:", 'text');
         let type: Answers<string> = await Console.showOptions(["Electric", "Conventional",], "Choose a type:");
         let from: Answers<string> = await Console.waitForAnswers("Enter the earliest time:", 'text');
