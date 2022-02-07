@@ -183,7 +183,7 @@ export class Main {
 
     // Select a car
     let selectedCar = await Car.selectACar(_list);
-    Console.printLine("You selected: " + selectedCar.model + "\nEarliest booking time: " + selectedCar.from +".\nLatest booking time: " + selectedCar.to + "\n");
+    Console.printLine("You selected: " + selectedCar.model + "\nEarliest booking time: " + selectedCar.from +".\nLatest booking time: " + selectedCar.to + ".\nMaximum booking duration: " + selectedCar.maxDuration+" minutes.\n");
 
     // If selected car exists call bookACar
     let bookingProperties = await Booking.startBookingProcess(selectedCar, User);
@@ -206,7 +206,7 @@ export class Main {
       await Car.showCarList(foundCars);
 
       let selectedCar = await Car.selectACar(foundCars);
-      Console.printLine("You selected: " + selectedCar.model + "\nEarliest booking time: " + selectedCar.from +".\nLatest booking time: " + selectedCar.to + "\n");
+      Console.printLine("You selected: " + selectedCar.model + "\nEarliest booking time: " + selectedCar.from +".\nLatest booking time: " + selectedCar.to + ".\nMaximum booking duration: " + selectedCar.maxDuration+" minutes.\n");
       let bookingProperties = await Booking.startBookingProcess(selectedCar, User);
       if (bookingProperties[0] == "ok") {
         Booking.bookACar(parseInt(bookingProperties[1]), new Date(bookingProperties[2]), parseInt(bookingProperties[3]), parseInt(bookingProperties[4]), User, selectedCar);
