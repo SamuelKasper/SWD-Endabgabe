@@ -18,3 +18,6 @@
 2. Class Diagram: https://github.com/SamuelKasper/SWD-Endabgabe/blob/main/UML_Diagramme/Klassendiagram.jpg
 3. Use Case Daiagram: https://github.com/SamuelKasper/SWD-Endabgabe/blob/main/UML_Diagramme/Use%20Case%20Diagram.jpg
 
+## Repository:
+https://github.com/SamuelKasper/SWD-Endabgabe
+
