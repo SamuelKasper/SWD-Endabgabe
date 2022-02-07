@@ -31,8 +31,8 @@ export class Car {
         let id: string = Utility.generateNextID(idArray) +"";
         let model: Answers<string> = await Console.waitForAnswers("Enter the model:", 'text');
         let type: Answers<string> = await Console.showOptions(["Electric", "Conventional",], "Choose a type:");
-        let from: Answers<string> = await Console.waitForAnswers("Enter the earliest time:", 'text');
-        let to: Answers<string> = await Console.waitForAnswers("Enter the latest time:", 'text');
+        let from: Answers<string> = await Console.waitForAnswers("Enter the earliest time (format: XX:XX, e.g. 8:00):", 'text');
+        let to: Answers<string> = await Console.waitForAnswers("Enter the latest time (format: XX:XX, e.g. 8:00):", 'text');
         let maxDuration: Answers<string> = await Console.waitForAnswers("Enter the maximum duration in minutes", 'number');
         let price: Answers<string> = await Console.waitForAnswers("Enter the flat price:", 'number');
         let pricePerMin: Answers<string> = await Console.waitForAnswers("Enter the additional price per minute in cent:", 'number');

@@ -237,7 +237,7 @@ export class Booking {
                         }
                     } else {
                         if (Date.parse(_booking[i].from + "") > Date.parse(new Date() + "")) {
-                            amountOfBookings
+                            amountOfBookings++;
                             this.printBookings(_booking[i]);
                         }
                     }
