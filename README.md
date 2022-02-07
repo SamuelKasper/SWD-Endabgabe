@@ -9,8 +9,8 @@
 1. All JSON files must at least contain [].
 2. Use npm run start in console to start the program.
 3. Log in as admin: 
-    username: admin
-    password: admin
+    - username: admin
+    - password: admin
 
 ## Diagrams:
 
